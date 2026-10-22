@@ -117,18 +117,18 @@ function EditorEvento({ ev, onClose }: { ev: Partial<Evento> | null; onClose: ()
   const [lastEv, setLastEv] = useState<Partial<Evento> | null>(null);
   if (ev !== lastEv) {
     setLastEv(ev);
-    if (ev) setF({ ...ev, fecha_inicio: ev.fecha_inicio?.includes("Z") || ev.fecha_inicio?.includes("+") ? format(new Date(ev.fecha_inicio), "yyyy-MM-dd'T'HH:mm") : ev.fecha_inicio });
+    if (ev) { const fi = ev.fecha_inicio ?? ""; setF({ ...ev, fecha_inicio: fi.includes("Z") || fi.includes("+") ? format(new Date(fi), "yyyy-MM-dd'T'HH:mm") : fi }); }
   }
   const esVencimiento = !!f.tramite_id;
 
   async function guardar() {
-    if (!f.titulo?.trim() || !f.fecha_inicio) return toast.error("Título y fecha obligatorios");
+    if (!f.titulo?.trim() || !f.fecha_inicio) { toast.error("Título y fecha obligatorios"); return; }
     const payload = {
       titulo: f.titulo, tipo_evento: f.tipo_evento ?? "Visita a Centro", centro_id: f.centro_id ?? null,
       fecha_inicio: new Date(f.fecha_inicio).toISOString(), realizada: !!f.realizada, notas_visita: f.notas_visita ?? null,
     };
     const { error } = f.id ? await supabase.from("agenda_eventos").update(payload).eq("id", f.id) : await supabase.from("agenda_eventos").insert(payload);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["eventos"] });
     onClose();
   }
@@ -148,7 +148,7 @@ function EditorEvento({ ev, onClose }: { ev: Partial<Evento> | null; onClose: ()
           <div className="space-y-1.5"><Label>Título</Label><Input value={f.titulo ?? ""} onChange={(e) => setF({ ...f, titulo: e.target.value })} disabled={esVencimiento} /></div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5"><Label>Tipo</Label>
-              <Select value={f.tipo_evento} onValueChange={(v) => setF({ ...f, tipo_evento: v })} disabled={esVencimiento}>
+              <Select value={f.tipo_evento ?? "Visita a Centro"} onValueChange={(v) => setF({ ...f, tipo_evento: v })} disabled={esVencimiento}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{TIPOS_EVENTO.filter((t) => esVencimiento || t !== "Vencimiento Trámite").map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
               </Select>

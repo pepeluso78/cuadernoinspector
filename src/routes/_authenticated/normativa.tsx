@@ -29,16 +29,16 @@ const BLOQUES = [
 function NormativaPage() {
   const qc = useQueryClient();
   const { data: normas = [] } = useQuery(normativaQuery);
-  const [bloque, setBloque] = useState(BLOQUES[0].value);
+  const [bloque, setBloque] = useState("Inspección");
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ rango_normativo: "", titulo_norma: "", etapa_educativa: "Todas", url_enlace: "", cita_informes: "" });
   const lista = normas.filter((n) => n.bloque_tematico === bloque && `${n.titulo_norma} ${n.cita_informes} ${n.etapa_educativa}`.toLowerCase().includes(q.toLowerCase()));
 
   async function add() {
-    if (!f.titulo_norma || !f.rango_normativo) return toast.error("Rango y título obligatorios");
+    if (!f.titulo_norma || !f.rango_normativo) { toast.error("Rango y título obligatorios"); return; }
     const { error } = await supabase.from("normativa_clm").insert({ ...f, bloque_tematico: bloque, url_enlace: f.url_enlace || BIBLIOTECA_URL });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["normativa"] });
     setOpen(false);
   }

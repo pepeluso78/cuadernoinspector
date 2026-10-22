@@ -10,7 +10,7 @@ export const PLAZOS_POR_TIPO: { label: string; dias: number }[] = [
 
 /** Parse "YYYY-MM-DD" as a local date (no timezone shift). */
 export function parseISODate(s: string): Date {
-  const [y, m, d] = s.split("-").map(Number);
+  const [y = 1970, m = 1, d = 1] = s.split("-").map(Number);
   return new Date(y, m - 1, d);
 }
 

@@ -25,9 +25,9 @@ function CentrosPage() {
   const lista = centros.filter((c) => `${c.nombre} ${c.codigo_centro} ${c.localidad}`.toLowerCase().includes(q.toLowerCase()));
 
   async function crear() {
-    if (!f.codigo_centro || !f.nombre) return toast.error("Código y nombre son obligatorios");
+    if (!f.codigo_centro || !f.nombre) { toast.error("Código y nombre son obligatorios"); return; }
     const { error } = await supabase.from("centros").insert(f);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["centros"] });
     setOpen(false);
     toast.success("Centro añadido");

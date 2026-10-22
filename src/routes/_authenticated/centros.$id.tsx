@@ -38,7 +38,7 @@ function CentroPage() {
     const { id: _id, created_at, ...rest } = c!;
     void _id; void created_at;
     const { error } = await supabase.from("centros").update(rest).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["centros"] });
     toast.success("Ficha guardada");
   }
@@ -100,9 +100,9 @@ function CuadernoCampo({ centroId }: { centroId: string }) {
   const lista = notas.filter((n) => n.categoria === tab && `${n.titulo} ${n.contenido}`.toLowerCase().includes(q.toLowerCase()));
 
   async function add() {
-    if (!titulo.trim()) return toast.error("Añade un título");
+    if (!titulo.trim()) { toast.error("Añade un título"); return; }
     const { error } = await supabase.from("notas_centro").insert({ centro_id: centroId, categoria: tab, titulo, contenido });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setTitulo(""); setContenido("");
     qc.invalidateQueries({ queryKey: ["notas", centroId] });
   }

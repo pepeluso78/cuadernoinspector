@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Copy, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +16,7 @@ import { CATEGORIAS, ETIQUETA_CATEGORIA, estadoGlobal, generarRequerimiento, ite
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/checklists")({
-  validateSearch: (s: Record<string, unknown>) => ({ centro: typeof s.centro === "string" ? s.centro : undefined }),
+  validateSearch: (s: Record<string, unknown>): { centro?: string } => (typeof s["centro"] === "string" ? { centro: s["centro"] } : {}),
   head: () => ({ meta: [{ title: "Checklists de Supervisión · SIE-CLM" }, { name: "description", content: "Supervisión por centro en 5 áreas." }] }),
   component: ChecklistsPage,
 });
@@ -72,7 +72,7 @@ function PanelCentro({ centroId, cat, setCat }: { centroId: string; cat: Categor
   );
 }
 
-function EditorChecklist({ centroId, cat, registro }: { centroId: string; cat: Categoria; registro?: { items_verificacion: unknown; observaciones_inspector: string | null; requerimiento_generado: string | null; fecha_supervision: string | null } }) {
+function EditorChecklist({ centroId, cat, registro }: { centroId: string; cat: Categoria; registro: { items_verificacion: unknown; observaciones_inspector: string | null; requerimiento_generado: string | null; fecha_supervision: string | null } | undefined }) {
   const qc = useQueryClient();
   const { data: centros = [] } = useQuery(centrosQuery);
   const centro = centros.find((c) => c.id === centroId);
@@ -82,7 +82,6 @@ function EditorChecklist({ centroId, cat, registro }: { centroId: string; cat: C
   const [texto, setTexto] = useState(registro?.requerimiento_generado ?? "");
   const [fecha, setFecha] = useState(registro?.fecha_supervision ?? "");
   const [nuevo, setNuevo] = useState("");
-  useEffect(() => {}, []);
 
   const upd = (i: number, p: Partial<ItemChecklist>) => setItems(items.map((it, j) => (j === i ? { ...it, ...p } : it)));
   const global = estadoGlobal(items);
@@ -92,7 +91,7 @@ function EditorChecklist({ centroId, cat, registro }: { centroId: string; cat: C
       { centro_id: centroId, curso_escolar: CURSO, categoria: cat, items_verificacion: items, observaciones_inspector: obs, requerimiento_generado: texto, fecha_supervision: fecha || null, estado_global: global, updated_at: new Date().toISOString() },
       { onConflict: "centro_id,curso_escolar,categoria" },
     );
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["checklists"] });
     toast.success("Checklist guardada");
   }

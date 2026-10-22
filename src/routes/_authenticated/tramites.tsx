@@ -18,7 +18,7 @@ import { calcularFechaLimite, PLAZOS_POR_TIPO, toISODate, PLAZO_GENERAL } from "
 import { BUZON_URL, ESTADOS_TRAMITE, INSPECTOR, ORIGENES, TIPOS_ACTUACION } from "@/lib/constants";
 
 export const Route = createFileRoute("/_authenticated/tramites")({
-  validateSearch: (s: Record<string, unknown>) => ({ nuevo: s.nuevo === true || s.nuevo === "true" ? true : undefined }),
+  validateSearch: (s: Record<string, unknown>): { nuevo?: boolean } => (s["nuevo"] === true || s["nuevo"] === "true" ? { nuevo: true } : {}),
   head: () => ({ meta: [{ title: "Trámites y Correo · SIE-CLM" }, { name: "description", content: "Entradas, notas interiores y control de plazos." }] }),
   component: TramitesPage,
 });
@@ -120,11 +120,11 @@ function NuevoTramite({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
   const set = (k: keyof typeof f, v: string | number) => setF((p) => ({ ...p, [k]: v }));
 
   async function guardar() {
-    if (!f.asunto.trim()) return toast.error("El asunto es obligatorio");
+    if (!f.asunto.trim()) { toast.error("El asunto es obligatorio"); return; }
     const { error } = await supabase.from("tramites").insert({
       ...f, centro_id: f.centro_id === SIN_CENTRO ? null : f.centro_id, fecha_limite: limite, estado: "Pendiente",
     });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(`Trámite registrado. Vence el ${limite} y se ha añadido a la agenda.`);
     qc.invalidateQueries({ queryKey: ["tramites"] });
     qc.invalidateQueries({ queryKey: ["eventos"] });
@@ -214,7 +214,7 @@ function DetalleTramite({ tramite, onClose }: { tramite: Tramite | null; onClose
     const { id, created_at, ...rest } = d!;
     void created_at;
     const { error } = await supabase.from("tramites").update(rest).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Trámite guardado");
     qc.invalidateQueries({ queryKey: ["tramites"] });
     qc.invalidateQueries({ queryKey: ["eventos"] });
