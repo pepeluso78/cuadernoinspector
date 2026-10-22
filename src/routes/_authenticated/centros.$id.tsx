@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ArrowLeft, ClipboardCheck, Search, Star, Trash2 } from "lucide-react";
+import { ArrowLeft, ClipboardCheck, FileDown, Search, Star, Trash2 } from "lucide-react";
+import { exportarCuadernoPDF } from "@/lib/exportar-pdf";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ function CentroPage() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
   const { data: centro } = useQuery(centroQuery(id));
+  const { data: notas = [] } = useQuery(notasQuery(id));
   const [c, setC] = useState<Centro | null>(null);
   useEffect(() => { if (centro) setC(centro); }, [centro]);
   if (!c) return <p className="text-muted-foreground">Cargando…</p>;
@@ -51,7 +53,8 @@ function CentroPage() {
           <p className="eyebrow">{c.tipo_centro} · {c.codigo_centro} · {c.localidad}</p>
           <h1 className="font-serif text-3xl font-semibold text-primary">{c.nombre}</h1>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => { if (!exportarCuadernoPDF(c, notas)) toast.error("Permite las ventanas emergentes para exportar"); }}><FileDown className="h-4 w-4" /> Exportar a PDF</Button>
           <Button variant="outline" asChild><Link to="/checklists" search={{ centro: id }}><ClipboardCheck className="h-4 w-4" /> Checklists</Link></Button>
           <Button onClick={guardar}>Guardar ficha</Button>
         </div>
