@@ -10,33 +10,143 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
+import { Route as AuthenticatedChecklistsRouteImport } from './routes/_authenticated/checklists'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedNormativaRouteImport } from './routes/_authenticated/normativa'
+import { Route as AuthenticatedTramitesRouteImport } from './routes/_authenticated/tramites'
+import { Route as AuthenticatedCentrosIndexRouteImport } from './routes/_authenticated/centros.index'
+import { Route as AuthenticatedCentrosIdRouteImport } from './routes/_authenticated/centros.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAgendaRoute = AuthenticatedAgendaRouteImport.update({
+  id: '/agenda',
+  path: '/agenda',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedChecklistsRoute = AuthenticatedChecklistsRouteImport.update({
+  id: '/checklists',
+  path: '/checklists',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNormativaRoute = AuthenticatedNormativaRouteImport.update({
+  id: '/normativa',
+  path: '/normativa',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTramitesRoute = AuthenticatedTramitesRouteImport.update({
+  id: '/tramites',
+  path: '/tramites',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCentrosIndexRoute =
+  AuthenticatedCentrosIndexRouteImport.update({
+    id: '/centros/',
+    path: '/centros/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCentrosIdRoute = AuthenticatedCentrosIdRouteImport.update({
+  id: '/centros/$id',
+  path: '/centros/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/agenda': typeof AuthenticatedAgendaRoute
+  '/checklists': typeof AuthenticatedChecklistsRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/normativa': typeof AuthenticatedNormativaRoute
+  '/tramites': typeof AuthenticatedTramitesRoute
+  '/centros/$id': typeof AuthenticatedCentrosIdRoute
+  '/centros/': typeof AuthenticatedCentrosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/agenda': typeof AuthenticatedAgendaRoute
+  '/checklists': typeof AuthenticatedChecklistsRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/normativa': typeof AuthenticatedNormativaRoute
+  '/tramites': typeof AuthenticatedTramitesRoute
+  '/centros/$id': typeof AuthenticatedCentrosIdRoute
+  '/centros': typeof AuthenticatedCentrosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
+  '/_authenticated/checklists': typeof AuthenticatedChecklistsRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/normativa': typeof AuthenticatedNormativaRoute
+  '/_authenticated/tramites': typeof AuthenticatedTramitesRoute
+  '/_authenticated/centros/$id': typeof AuthenticatedCentrosIdRoute
+  '/_authenticated/centros/': typeof AuthenticatedCentrosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/agenda'
+    | '/checklists'
+    | '/dashboard'
+    | '/normativa'
+    | '/tramites'
+    | '/centros/$id'
+    | '/centros/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/agenda'
+    | '/checklists'
+    | '/dashboard'
+    | '/normativa'
+    | '/tramites'
+    | '/centros/$id'
+    | '/centros'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/agenda'
+    | '/_authenticated/checklists'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/normativa'
+    | '/_authenticated/tramites'
+    | '/_authenticated/centros/$id'
+    | '/_authenticated/centros/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +158,99 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/agenda': {
+      id: '/_authenticated/agenda'
+      path: '/agenda'
+      fullPath: '/agenda'
+      preLoaderRoute: typeof AuthenticatedAgendaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/checklists': {
+      id: '/_authenticated/checklists'
+      path: '/checklists'
+      fullPath: '/checklists'
+      preLoaderRoute: typeof AuthenticatedChecklistsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/normativa': {
+      id: '/_authenticated/normativa'
+      path: '/normativa'
+      fullPath: '/normativa'
+      preLoaderRoute: typeof AuthenticatedNormativaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tramites': {
+      id: '/_authenticated/tramites'
+      path: '/tramites'
+      fullPath: '/tramites'
+      preLoaderRoute: typeof AuthenticatedTramitesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/centros/': {
+      id: '/_authenticated/centros/'
+      path: '/centros'
+      fullPath: '/centros/'
+      preLoaderRoute: typeof AuthenticatedCentrosIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/centros/$id': {
+      id: '/_authenticated/centros/$id'
+      path: '/centros/$id'
+      fullPath: '/centros/$id'
+      preLoaderRoute: typeof AuthenticatedCentrosIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
+  AuthenticatedChecklistsRoute: typeof AuthenticatedChecklistsRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedNormativaRoute: typeof AuthenticatedNormativaRoute
+  AuthenticatedTramitesRoute: typeof AuthenticatedTramitesRoute
+  AuthenticatedCentrosIdRoute: typeof AuthenticatedCentrosIdRoute
+  AuthenticatedCentrosIndexRoute: typeof AuthenticatedCentrosIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
+  AuthenticatedChecklistsRoute: AuthenticatedChecklistsRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedNormativaRoute: AuthenticatedNormativaRoute,
+  AuthenticatedTramitesRoute: AuthenticatedTramitesRoute,
+  AuthenticatedCentrosIdRoute: AuthenticatedCentrosIdRoute,
+  AuthenticatedCentrosIndexRoute: AuthenticatedCentrosIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
