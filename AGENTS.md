@@ -14,3 +14,4 @@
 - Trámite deadlines are computed client-side in src/lib/plazos.ts (tested); a DB trigger mirrors each trámite's fecha_limite into agenda_eventos so the calendar stays in sync.
 - Protected pages live under src/routes/_authenticated/ which renders the sidebar shell (src/components/app-shell.tsx).
 - Email intake: forwarded mails land in the linked Gmail connection (only mails from the inspector JCCM address are imported); src/lib/correo.server.ts imports them as trámites (deduped by tramites.correo_id), run every 10 min by a managed cron route and by the 'Importar del correo' button.
+- Trámite documents use the private tramites-documentos Storage bucket and documentos_tramite metadata; Gmail part IDs deduplicate imports and failed attachments are retried on subsequent imports, so partial mail imports are recoverable.

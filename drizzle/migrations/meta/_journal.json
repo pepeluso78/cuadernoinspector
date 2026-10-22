@@ -15,6 +15,13 @@
       "when": 1792700256535,
       "tag": "0001_tramites_correo_id",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792701624127,
+      "tag": "0002_documentos_tramites",
+      "breakpoints": true
     }
   ]
 }
