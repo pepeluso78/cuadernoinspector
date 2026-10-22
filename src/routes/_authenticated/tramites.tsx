@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Mail, Plus, Search, Trash2, BookOpen, Copy, Inbox } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { importarCorreosFn } from "@/lib/correo.functions";
+import { DocumentosTramite } from "@/components/documentos-tramite";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/app-shell";
 import { CuentaAtras } from "@/components/semaforo";
@@ -21,7 +22,7 @@ import { BUZON_URL, ESTADOS_TRAMITE, INSPECTOR, ORIGENES, TIPOS_ACTUACION } from
 
 export const Route = createFileRoute("/_authenticated/tramites")({
   validateSearch: (s: Record<string, unknown>): { nuevo?: boolean } => (s["nuevo"] === true || s["nuevo"] === "true" ? { nuevo: true } : {}),
-  head: () => ({ meta: [{ title: "Trámites y Correo · SIE-CLM" }, { name: "description", content: "Entradas, notas interiores y control de plazos." }] }),
+  head: () => ({ meta: [{ title: "Trámites y Correo · SIE-CLM" }, { name: "description", content: "Entradas, notas interiores, documentos adjuntos y control de plazos." }, { property: "og:title", content: "Trámites y Correo · SIE-CLM" }, { property: "og:description", content: "Entradas, notas interiores, documentos adjuntos y control de plazos." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: TramitesPage,
 });
 
@@ -44,10 +45,15 @@ function TramitesPage() {
     try {
       const r = await importarFn();
       if ("error" in r && r.error) toast.error(r.error);
-      else toast.success(r.creados ? `${r.creados} trámite(s) nuevo(s) desde el correo` : "No hay correos nuevos");
+      else {
+        toast.success(r.creados || r.adjuntos ? `${r.creados} trámite(s) y ${r.adjuntos} adjunto(s) importados` : "No hay correos ni adjuntos nuevos");
+        for (const error of r.errores) toast.error(error);
+      }
       qc.invalidateQueries({ queryKey: ["tramites"] });
       qc.invalidateQueries({ queryKey: ["eventos"] });
-    } finally { setImportando(false); }
+      qc.invalidateQueries({ queryKey: ["documentos-tramite"] });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "No se pudo importar el correo"); }
+    finally { setImportando(false); }
   }
 
   useEffect(() => {
@@ -216,18 +222,21 @@ function DetalleTramite({ tramite, onClose }: { tramite: Tramite | null; onClose
   const upd = (k: keyof Tramite, v: string | number) => setD({ ...d, [k]: v } as Tramite);
 
   function plantilla() {
+    if (!d) return;
     upd("borrador_informe",
-      `INFORME DE LA INSPECCIÓN DE EDUCACIÓN\n\nASUNTO: ${d!.asunto}\nREF.: ${d!.numero_registro ?? ""}\n\nANTECEDENTES DE HECHO\nPrimero.- Con fecha ${d!.fecha_entrada} se recibe ${d!.origen.toLowerCase()} remitida por ${d!.remitente || "—"}.\n\nFUNDAMENTOS DE DERECHO\n\n\nCONCLUSIONES / PROPUESTA\n\n\nAlbacete, ${new Date().toLocaleDateString("es-ES")}\nEl Inspector de Educación\nFdo.: ${INSPECTOR.nombre}`);
+      `INFORME DE LA INSPECCIÓN DE EDUCACIÓN\n\nASUNTO: ${d.asunto}\nREF.: ${d.numero_registro ?? ""}\n\nANTECEDENTES DE HECHO\nPrimero.- Con fecha ${d.fecha_entrada} se recibe ${d.origen.toLowerCase()} remitida por ${d.remitente || "—"}.\n\nFUNDAMENTOS DE DERECHO\n\n\nCONCLUSIONES / PROPUESTA\n\n\nAlbacete, ${new Date().toLocaleDateString("es-ES")}\nEl Inspector de Educación\nFdo.: ${INSPECTOR.nombre}`);
   }
   function insertarCita(cita: string) {
-    const actual = d!.borrador_informe ?? "";
+    if (!d) return;
+    const actual = d.borrador_informe ?? "";
     const marca = "FUNDAMENTOS DE DERECHO\n";
     const nuevo = actual.includes(marca) ? actual.replace(marca, `${marca}- ${cita}\n`) : `${actual}\n- ${cita}`;
     upd("borrador_informe", nuevo);
     toast.success("Cita insertada en Fundamentos de Derecho");
   }
   async function guardar() {
-    const { id, created_at, ...rest } = d!;
+    if (!d) return;
+    const { id, created_at, ...rest } = d;
     void created_at;
     const { error } = await supabase.from("tramites").update(rest).eq("id", id);
     if (error) { toast.error(error.message); return; }
@@ -236,8 +245,16 @@ function DetalleTramite({ tramite, onClose }: { tramite: Tramite | null; onClose
     qc.invalidateQueries({ queryKey: ["eventos"] });
   }
   async function borrar() {
+    if (!d) return;
     if (!confirm("¿Eliminar este trámite?")) return;
-    await supabase.from("tramites").delete().eq("id", d!.id);
+    const { data: docs, error: docError } = await supabase.from("documentos_tramite").select("ruta").eq("tramite_id", d.id);
+    if (docError) { toast.error(docError.message); return; }
+    if (docs?.length) {
+      const { error } = await supabase.storage.from("tramites-documentos").remove(docs.map((doc) => doc.ruta));
+      if (error) { toast.error(error.message); return; }
+    }
+    const { error } = await supabase.from("tramites").delete().eq("id", d.id);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["tramites"] });
     qc.invalidateQueries({ queryKey: ["eventos"] });
     onClose();
@@ -271,6 +288,7 @@ function DetalleTramite({ tramite, onClose }: { tramite: Tramite | null; onClose
           <Label>Texto del correo / escrito recibido</Label>
           <Textarea rows={6} placeholder={`Pega aquí el correo recibido en ${INSPECTOR.email}`} value={d.descripcion_entrada ?? ""} onChange={(e) => upd("descripcion_entrada", e.target.value)} />
         </div>
+        <DocumentosTramite key={d.id} tramiteId={d.id} />
         <div className="mt-4 grid gap-4 lg:grid-cols-3">
           <div className="space-y-1.5 lg:col-span-2">
             <div className="flex items-center justify-between">
@@ -286,9 +304,9 @@ function DetalleTramite({ tramite, onClose }: { tramite: Tramite | null; onClose
             <ul className="space-y-1.5">
               {normasF.map((n) => (
                 <li key={n.id}>
-                  <button type="button" onClick={() => insertarCita(n.cita_informes ?? n.titulo_norma)} className="w-full rounded border p-2 text-left text-xs hover:bg-accent">
+                  <Button variant="outline" onClick={() => insertarCita(n.cita_informes ?? n.titulo_norma)} className="h-auto w-full justify-start whitespace-normal p-2 text-left text-xs">
                     <span className="font-semibold text-primary">{n.rango_normativo}</span> · {n.titulo_norma.slice(0, 90)}…
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
