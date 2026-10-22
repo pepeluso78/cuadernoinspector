@@ -16,7 +16,7 @@ import { centroQuery, notasQuery, type Centro } from "@/lib/queries";
 import { CATEGORIAS_NOTA } from "@/lib/constants";
 
 export const Route = createFileRoute("/_authenticated/centros/$id")({
-  head: () => ({ meta: [{ title: "Ficha de centro · SIE-CLM" }, { name: "description", content: "Ficha, equipo directivo y cuaderno de campo del centro." }] }),
+  head: () => ({ meta: [{ title: "Ficha de centro · SIE-CLM" }, { name: "description", content: "Ficha, equipo directivo y cuaderno de campo del centro." }, { property: "og:title", content: "Ficha de centro · SIE-CLM" }, { property: "og:description", content: "Ficha, equipo directivo y cuaderno de campo del centro." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: CentroPage,
 });
 

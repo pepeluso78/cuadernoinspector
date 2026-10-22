@@ -11,7 +11,7 @@ import { diasRestantes, semaforo } from "@/lib/plazos";
 import { BIBLIOTECA_URL, BUZON_URL, INSPECTOR } from "@/lib/constants";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard · SIE-CLM" }, { name: "description", content: "Resumen de trámites, visitas y supervisión." }] }),
+  head: () => ({ meta: [{ title: "Dashboard · SIE-CLM" }, { name: "description", content: "Resumen de trámites, visitas y supervisión." }, { property: "og:title", content: "Dashboard · SIE-CLM" }, { property: "og:description", content: "Resumen de trámites, visitas y supervisión." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Dashboard,
 });
 

@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/checklists")({
   validateSearch: (s: Record<string, unknown>): { centro?: string } => (typeof s["centro"] === "string" ? { centro: s["centro"] } : {}),
-  head: () => ({ meta: [{ title: "Checklists de Supervisión · SIE-CLM" }, { name: "description", content: "Supervisión por centro en 5 áreas." }] }),
+  head: () => ({ meta: [{ title: "Checklists de Supervisión · SIE-CLM" }, { name: "description", content: "Supervisión por centro en 5 áreas." }, { property: "og:title", content: "Checklists de Supervisión · SIE-CLM" }, { property: "og:description", content: "Supervisión por centro en 5 áreas." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ChecklistsPage,
 });
 
