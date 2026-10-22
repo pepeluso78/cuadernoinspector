@@ -254,6 +254,7 @@ export type Database = {
           asunto: string
           borrador_informe: string | null
           centro_id: string | null
+          correo_id: string | null
           created_at: string | null
           descripcion_entrada: string | null
           estado: string | null
@@ -271,6 +272,7 @@ export type Database = {
           asunto: string
           borrador_informe?: string | null
           centro_id?: string | null
+          correo_id?: string | null
           created_at?: string | null
           descripcion_entrada?: string | null
           estado?: string | null
@@ -288,6 +290,7 @@ export type Database = {
           asunto?: string
           borrador_informe?: string | null
           centro_id?: string | null
+          correo_id?: string | null
           created_at?: string | null
           descripcion_entrada?: string | null
           estado?: string | null
