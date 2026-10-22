@@ -2,7 +2,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Mail, Plus, Search, Trash2, BookOpen, Copy } from "lucide-react";
+import { Mail, Plus, Search, Trash2, BookOpen, Copy, Inbox } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { importarCorreosFn } from "@/lib/correo.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/app-shell";
 import { CuentaAtras } from "@/components/semaforo";
@@ -34,6 +36,19 @@ function TramitesPage() {
   const [filtro, setFiltro] = useState("abiertos");
   const [open, setOpen] = useState(false);
   const [sel, setSel] = useState<Tramite | null>(null);
+  const qc = useQueryClient();
+  const importarFn = useServerFn(importarCorreosFn);
+  const [importando, setImportando] = useState(false);
+  async function importar() {
+    setImportando(true);
+    try {
+      const r = await importarFn();
+      if ("error" in r && r.error) toast.error(r.error);
+      else toast.success(r.creados ? `${r.creados} trámite(s) nuevo(s) desde el correo` : "No hay correos nuevos");
+      qc.invalidateQueries({ queryKey: ["tramites"] });
+      qc.invalidateQueries({ queryKey: ["eventos"] });
+    } finally { setImportando(false); }
+  }
 
   useEffect(() => {
     if (nuevo) {
@@ -57,6 +72,7 @@ function TramitesPage() {
         <Button variant="outline" asChild>
           <a href={BUZON_URL} target="_blank" rel="noreferrer"><Mail className="h-4 w-4" /> Buzón {INSPECTOR.email}</a>
         </Button>
+        <Button variant="outline" disabled={importando} onClick={importar}><Inbox className="h-4 w-4" /> {importando ? "Leyendo correo…" : "Importar del correo"}</Button>
         <Button variant="crimson" onClick={() => setOpen(true)}><Plus className="h-4 w-4" /> Nueva Entrada / Nota Interior</Button>
       </PageHeader>
 

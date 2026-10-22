@@ -19,6 +19,7 @@ import { Route as AuthenticatedNormativaRouteImport } from './routes/_authentica
 import { Route as AuthenticatedTramitesRouteImport } from './routes/_authenticated/tramites'
 import { Route as AuthenticatedCentrosIndexRouteImport } from './routes/_authenticated/centros.index'
 import { Route as AuthenticatedCentrosIdRouteImport } from './routes/_authenticated/centros.$id'
+import { Route as ApiPublicJobsImportarCorreoRouteImport } from './routes/api/public/jobs/importar-correo'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,6 +71,12 @@ const AuthenticatedCentrosIdRoute = AuthenticatedCentrosIdRouteImport.update({
   path: '/centros/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicJobsImportarCorreoRoute =
+  ApiPublicJobsImportarCorreoRouteImport.update({
+    id: '/api/public/jobs/importar-correo',
+    path: '/api/public/jobs/importar-correo',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/tramites': typeof AuthenticatedTramitesRoute
   '/centros/$id': typeof AuthenticatedCentrosIdRoute
   '/centros/': typeof AuthenticatedCentrosIndexRoute
+  '/api/public/jobs/importar-correo': typeof ApiPublicJobsImportarCorreoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -92,6 +100,7 @@ export interface FileRoutesByTo {
   '/tramites': typeof AuthenticatedTramitesRoute
   '/centros/$id': typeof AuthenticatedCentrosIdRoute
   '/centros': typeof AuthenticatedCentrosIndexRoute
+  '/api/public/jobs/importar-correo': typeof ApiPublicJobsImportarCorreoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -105,6 +114,7 @@ export interface FileRoutesById {
   '/_authenticated/tramites': typeof AuthenticatedTramitesRoute
   '/_authenticated/centros/$id': typeof AuthenticatedCentrosIdRoute
   '/_authenticated/centros/': typeof AuthenticatedCentrosIndexRoute
+  '/api/public/jobs/importar-correo': typeof ApiPublicJobsImportarCorreoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/tramites'
     | '/centros/$id'
     | '/centros/'
+    | '/api/public/jobs/importar-correo'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/tramites'
     | '/centros/$id'
     | '/centros'
+    | '/api/public/jobs/importar-correo'
   id:
     | '__root__'
     | '/'
@@ -141,12 +153,14 @@ export interface FileRouteTypes {
     | '/_authenticated/tramites'
     | '/_authenticated/centros/$id'
     | '/_authenticated/centros/'
+    | '/api/public/jobs/importar-correo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicJobsImportarCorreoRoute: typeof ApiPublicJobsImportarCorreoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -221,6 +235,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCentrosIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/jobs/importar-correo': {
+      id: '/api/public/jobs/importar-correo'
+      path: '/api/public/jobs/importar-correo'
+      fullPath: '/api/public/jobs/importar-correo'
+      preLoaderRoute: typeof ApiPublicJobsImportarCorreoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -251,6 +272,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicJobsImportarCorreoRoute: ApiPublicJobsImportarCorreoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
