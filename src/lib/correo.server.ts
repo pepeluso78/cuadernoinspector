@@ -8,10 +8,10 @@ function decode(b64: string) {
   const bin = atob(b64.replace(/-/g, "+").replace(/_/g, "/"));
   return new TextDecoder().decode(Uint8Array.from(bin, (ch) => ch.charCodeAt(0)));
 }
-function texto(p: Part): { plain?: string; html?: string } {
+function texto(p: Part): { plain?: string | undefined; html?: string | undefined } {
   if (p.mimeType === "text/plain" && p.body?.data) return { plain: decode(p.body.data) };
   if (p.mimeType === "text/html" && p.body?.data) return { html: decode(p.body.data) };
-  const r: { plain?: string; html?: string } = {};
+  const r: { plain?: string | undefined; html?: string | undefined } = {};
   for (const sp of p.parts ?? []) { const t = texto(sp); r.plain ??= t.plain; r.html ??= t.html; }
   return r;
 }
