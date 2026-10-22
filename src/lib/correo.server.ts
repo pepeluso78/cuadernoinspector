@@ -28,7 +28,7 @@ async function gmail(path: string) {
 /** Lee los correos reenviados de los últimos 30 días y crea los trámites que falten. */
 export async function importarCorreos() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const q = encodeURIComponent("newer_than:30d -in:sent -in:chats");
+  const q = encodeURIComponent("from:jlmgarcia@jccm.es newer_than:30d -in:sent -in:chats");
   const list = (await gmail(`/users/me/messages?maxResults=50&q=${q}`)) as { messages?: { id: string }[] };
   const ids = (list.messages ?? []).map((m) => m.id);
   if (!ids.length) return { creados: 0 };
