@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { centrosQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/_authenticated/centros/")({
-  head: () => ({ meta: [{ title: "Mis Centros · SIE-CLM" }, { name: "description", content: "Directorio de centros y equipos directivos." }] }),
+  head: () => ({ meta: [{ title: "Mis Centros · SIE-CLM" }, { name: "description", content: "Directorio de centros y equipos directivos." }, { property: "og:title", content: "Mis Centros · SIE-CLM" }, { property: "og:description", content: "Directorio de centros y equipos directivos." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: CentrosPage,
 });
 

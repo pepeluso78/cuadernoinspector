@@ -21,7 +21,7 @@ import { TIPOS_EVENTO } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/agenda")({
-  head: () => ({ meta: [{ title: "Agenda y Plazos · SIE-CLM" }, { name: "description", content: "Visitas, tareas y vencimientos de trámites." }] }),
+  head: () => ({ meta: [{ title: "Agenda y Plazos · SIE-CLM" }, { name: "description", content: "Visitas, tareas y vencimientos de trámites." }, { property: "og:title", content: "Agenda y Plazos · SIE-CLM" }, { property: "og:description", content: "Visitas, tareas y vencimientos de trámites." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AgendaPage,
 });
 

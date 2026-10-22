@@ -178,6 +178,50 @@ export type Database = {
           },
         ]
       }
+      documentos_tramite: {
+        Row: {
+          categoria: string
+          correo_parte_id: string | null
+          created_at: string
+          id: string
+          mime_type: string
+          nombre: string
+          ruta: string
+          tamano: number
+          tramite_id: string
+        }
+        Insert: {
+          categoria?: string
+          correo_parte_id?: string | null
+          created_at?: string
+          id?: string
+          mime_type?: string
+          nombre: string
+          ruta: string
+          tamano: number
+          tramite_id: string
+        }
+        Update: {
+          categoria?: string
+          correo_parte_id?: string | null
+          created_at?: string
+          id?: string
+          mime_type?: string
+          nombre?: string
+          ruta?: string
+          tamano?: number
+          tramite_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documentos_tramite_tramite_id_fkey"
+            columns: ["tramite_id"]
+            isOneToOne: false
+            referencedRelation: "tramites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       normativa_clm: {
         Row: {
           bloque_tematico: string

@@ -15,7 +15,7 @@ import { normativaQuery } from "@/lib/queries";
 import { BIBLIOTECA_URL } from "@/lib/constants";
 
 export const Route = createFileRoute("/_authenticated/normativa")({
-  head: () => ({ meta: [{ title: "Biblioteca Normativa CLM · SIE-CLM" }, { name: "description", content: "Repositorio personal de normativa con citas para informes." }] }),
+  head: () => ({ meta: [{ title: "Biblioteca Normativa CLM · SIE-CLM" }, { name: "description", content: "Repositorio personal de normativa con citas para informes." }, { property: "og:title", content: "Biblioteca Normativa CLM · SIE-CLM" }, { property: "og:description", content: "Repositorio personal de normativa con citas para informes." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: NormativaPage,
 });
 
