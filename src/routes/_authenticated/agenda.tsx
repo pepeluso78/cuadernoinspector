@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { centrosQuery, eventosQuery, type Evento } from "@/lib/queries";
 import { TIPOS_EVENTO } from "@/lib/constants";
+import { FESTIVOS, toISODate } from "@/lib/plazos";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/agenda")({
@@ -69,6 +70,7 @@ function AgendaPage() {
         )}
         <div className="ml-auto flex flex-wrap gap-3 text-xs">
           {TIPOS_EVENTO.map((t) => <span key={t} className="flex items-center gap-1"><span className={cn("h-2.5 w-2.5 rounded-sm", color[t])} />{t}</span>)}
+          <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-crimson/20 ring-1 ring-crimson/40" />Festivo</span>
         </div>
       </div>
 
@@ -89,10 +91,14 @@ function AgendaPage() {
             {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((d) => <div key={d} className="eyebrow px-2 py-1.5">{d}</div>)}
           </div>
           <div className="grid grid-cols-7">
-            {dias.map((d) => (
-              <div key={d.toISOString()} className={cn("border-b border-r p-1.5", vista === "mes" ? "min-h-28" : "min-h-80", !isSameMonth(d, ref) && vista === "mes" && "bg-muted/40")}
+            {dias.map((d) => {
+              const festivo = FESTIVOS[toISODate(d)];
+              const finde = d.getDay() === 0 || d.getDay() === 6;
+              return (
+              <div key={d.toISOString()} className={cn("border-b border-r p-1.5", vista === "mes" ? "min-h-28" : "min-h-80", !isSameMonth(d, ref) && vista === "mes" && "bg-muted/40", festivo && "bg-crimson/10", !festivo && finde && "bg-muted/30")}
                 onDoubleClick={() => setEdit({ tipo_evento: "Visita a Centro", fecha_inicio: format(d, "yyyy-MM-dd'T'09:00"), titulo: "" })}>
-                <p className={cn("mb-1 font-mono text-xs", isSameDay(d, new Date()) && "inline-block rounded bg-crimson px-1.5 text-crimson-foreground")}>{format(d, "d")}</p>
+                <p className={cn("mb-1 font-mono text-xs", festivo && "font-semibold text-crimson", isSameDay(d, new Date()) && "inline-block rounded bg-crimson px-1.5 text-crimson-foreground")}>{format(d, "d")}</p>
+                {festivo && <p className="mb-1 truncate text-[10px] font-medium text-crimson" title={festivo}>{festivo}</p>}
                 <div className="space-y-1">
                   {delDia(d).map((e) => (
                     <button key={e.id} type="button" onClick={() => setEdit(e)} className={cn("block w-full truncate rounded px-1.5 py-0.5 text-left text-[11px]", color[e.tipo_evento] ?? color["Tarea Despacho"], e.realizada && "opacity-50 line-through")}>
@@ -101,7 +107,8 @@ function AgendaPage() {
                   ))}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
