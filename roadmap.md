@@ -1,4 +1,6 @@
 # Documentos de trámites
+- [ ] Añadir configuración personal (nombre, apellidos, cargo y servicio provincial), acceso (correo de usuario y contraseña), remitente para trámites y temas.
+- [ ] Aplicar configuración a identificación, reseñas e importación; probar guardado y apariencia sin cambiar credenciales reales.
 - [x] Crear registro de visitas conectado a la agenda con reseña y PDF con logotipo del modelo.
 - [x] Verificar creación desde ambas pantallas, persistencia de la reseña y PDF.
 - [x] Guardar adjuntos del correo en almacenamiento privado, sin duplicarlos y con reintento.
