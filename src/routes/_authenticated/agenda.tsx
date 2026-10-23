@@ -70,6 +70,7 @@ function AgendaPage() {
         )}
         <div className="ml-auto flex flex-wrap gap-3 text-xs">
           {TIPOS_EVENTO.map((t) => <span key={t} className="flex items-center gap-1"><span className={cn("h-2.5 w-2.5 rounded-sm", color[t])} />{t}</span>)}
+          <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-crimson/20 ring-1 ring-crimson/40" />Festivo</span>
         </div>
       </div>
 
