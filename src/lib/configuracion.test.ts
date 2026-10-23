@@ -1,6 +1,11 @@
 import { test } from "vitest";
 import { expect, it } from "vitest";
 import { CARGOS, PROVINCIAS, CONFIG_INICIAL, configuracionSchema, busquedaCorreo } from "./configuracion";
+it("un usuario nuevo empieza con los datos personales y el correo en blanco", () => {
+  expect(CONFIG_INICIAL.nombre).toBe("");
+  expect(CONFIG_INICIAL.apellidos).toBe("");
+  expect(CONFIG_INICIAL.correo_referencia).toBe("");
+});
 it("admite los cuatro cargos solicitados", () => {
   expect(CARGOS).toEqual(["Inspector de Educación", "Inspectora de Educación", "Inspector Jefe", "Inspectora Jefa"]);
   expect(configuracionSchema.safeParse({ ...CONFIG_INICIAL, cargo: "Director" }).success).toBe(false);
