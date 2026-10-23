@@ -9,6 +9,6 @@ it("admite las cinco delegaciones provinciales", () => {
   expect(configuracionSchema.safeParse({ ...CONFIG_INICIAL, provincia: "Madrid" }).success).toBe(false);
 });
 it("filtra exclusivamente por el correo configurado y rechaza inyección de búsqueda", () => {
-  expect(busquedaCorreo("OTRO@jccm.es")).toBe("from:otro@jccm.es newer_than:30d -in:sent -in:chats");
+  expect(busquedaCorreo("OTRO@jccm.es")).toBe(`from:otro@jccm.es (subject:"nota interior" OR subject:entrada) newer_than:30d -in:chats -in:trash -in:spam`);
   expect(() => busquedaCorreo("otro@jccm.es OR from:intruso@example.com")).toThrow();
 });
