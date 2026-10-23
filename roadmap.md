@@ -11,3 +11,6 @@
 - [x] Botón de informe PDF por centro en Partes de Ausencias.
 - [x] Apuntar el botón del buzón a https://mail.google.com/mail/u/0/#inbox.
 - [x] Limpiar fechas de presentación de prueba en Partes de Ausencias (CC Aristos y CEIP Anton Diaz).
+- [x] Añadir Actividades de Formación y Tareas de Coordinación a los eventos.
+- [x] Módulo Guardias con formulario y Reporte de Guardia en PDF.
+- [x] Mostrar las guardias en el calendario.

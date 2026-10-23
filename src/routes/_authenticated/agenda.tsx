@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { centrosQuery, eventosQuery, type Evento } from "@/lib/queries";
+import { centrosQuery, eventosQuery, guardiasQuery, type Evento } from "@/lib/queries";
 import { TIPOS_EVENTO } from "@/lib/constants";
 import { FESTIVOS, toISODate } from "@/lib/plazos";
 import { cn } from "@/lib/utils";
@@ -32,12 +32,15 @@ const color: Record<string, string> = {
   "Vencimiento Trámite": "bg-crimson text-crimson-foreground",
   "Reunión Inspección": "bg-secondary text-secondary-foreground",
   "Tarea Despacho": "bg-warn-soft text-warn",
+  "Actividades de Formación": "bg-ok-soft text-ok",
+  "Tareas de Coordinación": "bg-accent text-accent-foreground ring-1 ring-border",
 };
 const SIN = "__none";
 
 function AgendaPage() {
   const { data: eventos = [] } = useQuery(eventosQuery);
   const { data: centros = [] } = useQuery(centrosQuery);
+  const { data: guardias = [] } = useQuery(guardiasQuery);
   const [vista, setVista] = useState("mes");
   const [ref, setRef] = useState(new Date());
   const [edit, setEdit] = useState<Partial<Evento> | null>(null);
@@ -71,6 +74,7 @@ function AgendaPage() {
         )}
         <div className="ml-auto flex flex-wrap gap-3 text-xs">
           {TIPOS_EVENTO.map((t) => <span key={t} className="flex items-center gap-1"><span className={cn("h-2.5 w-2.5 rounded-sm", color[t])} />{t}</span>)}
+          <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-crimson/15 ring-1 ring-crimson/30" />Guardia</span>
           <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-crimson/20 ring-1 ring-crimson/40" />Festivo</span>
         </div>
       </div>
@@ -105,6 +109,11 @@ function AgendaPage() {
                     <button key={e.id} type="button" onClick={() => setEdit(e)} className={cn("block w-full truncate rounded px-1.5 py-0.5 text-left text-[11px]", color[e.tipo_evento] ?? color["Tarea Despacho"], e.realizada && "opacity-50 line-through")}>
                       {format(new Date(e.fecha_inicio), "HH:mm")} {e.titulo}
                     </button>
+                  ))}
+                  {guardias.filter((g) => g.fecha === toISODate(d)).map((g) => (
+                    <Link key={g.id} to="/guardias" className="block w-full truncate rounded bg-crimson/15 px-1.5 py-0.5 text-left text-[11px] text-crimson ring-1 ring-crimson/30">
+                      Guardia · {g.persona_nombre}
+                    </Link>
                   ))}
                 </div>
               </div>
