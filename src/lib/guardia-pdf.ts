@@ -72,8 +72,10 @@ export async function crearGuardiaPDF(g: Guardia, centroNombre: string) {
     ...wrap(`Inspector/a del centro: ${g.inspector_centro || "—"}`),
     ...wrap(`Centro educativo: ${centroNombre || "—"}`),
   ]);
-  box("Incidencia tratada", wrap(g.incidencia || "—"), 6);
-  box("Respuesta dada por el inspector de guardia", wrap(g.respuesta || "—"), 6);
+  const amplia = (v: string) => (v.trim() ? 6 : 0);
+  box("Incidencia tratada", wrap(g.incidencia || "—"), amplia(g.incidencia || ""));
+  box("Respuesta dada por el inspector de guardia", wrap(g.respuesta || "—"), amplia(g.respuesta || ""));
+
 
   if (y < 110) nextPage();
   page.drawText(clean(`${g.provincia_guardia}, a ${fecha}`), { x: 260, y: y - 12, font, size: 11 });
