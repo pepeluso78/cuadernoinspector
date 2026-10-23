@@ -43,6 +43,13 @@
       "when": 1792765335556,
       "tag": "0005_resenas_visitas_agenda",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792765629674,
+      "tag": "0006_configuracion_aplicacion",
+      "breakpoints": true
     }
   ]
 }
