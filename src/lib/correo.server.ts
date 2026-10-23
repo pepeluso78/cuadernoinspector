@@ -33,9 +33,10 @@ async function gmail(path: string) {
 /** Lee los correos reenviados de los últimos 30 días y crea los trámites que falten. */
 export async function importarCorreos(cliente?: SupabaseClient<Database>) {
   const db = cliente ?? (await import("@/integrations/supabase/client.server")).supabaseAdmin;
-  const { data: config, error: configError } = await db.from("configuracion_aplicacion").select("correo_referencia").eq("id", 1).maybeSingle();
+  // La cuenta Gmail conectada es la del inspector titular: se usa su correo de referencia.
+  const { data: config, error: configError } = await db.from("configuracion_aplicacion").select("correo_referencia").neq("correo_referencia", "").order("id").limit(1).maybeSingle();
   if (configError) throw configError;
-  const remitenteConfigurado = config?.correo_referencia ?? CORREO_INICIAL;
+  const remitenteConfigurado = config?.correo_referencia || CORREO_INICIAL;
   const perfil = (await gmail(`/users/me/profile`)) as { emailAddress?: string };
   const q = encodeURIComponent(busquedaCorreo(remitenteConfigurado, perfil.emailAddress));
   const list = (await gmail(`/users/me/messages?maxResults=50&q=${q}`)) as { messages?: { id: string }[] };
