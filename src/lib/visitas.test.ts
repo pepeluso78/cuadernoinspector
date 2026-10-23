@@ -11,4 +11,8 @@ describe("Registro de visitas", () => {
     expect(resenaCompleta(datos)).toBe(true);
     for (const campo of Object.keys(datos)) expect(resenaCompleta({ ...datos, [campo]: " " })).toBe(false);
   });
+  it("nombra el PDF con la ñ y el formato Reseña AAAMMDD-código", () => {
+    expect(nombreArchivoResena("2026-10-23T12:00:00Z", "02007321")).toBe("Reseña 20261023-02007321.pdf");
+    expect(nombreArchivoResena("2026-10-23T23:30:00Z", "02007321")).toBe("Reseña 20261024-02007321.pdf");
+  });
 });
