@@ -74,7 +74,7 @@ function TramitesPage() {
 
   return (
     <div>
-      <PageHeader eyebrow="Módulo 1 · Regla de 10 días" title="Trámites y Correo">
+      <PageHeader eyebrow="Módulo 1 · Regla de 10 días lectivos" title="Trámites y Correo">
         <Button variant="outline" asChild>
           <a href={BUZON_URL} target="_blank" rel="noreferrer"><Mail className="h-4 w-4" /> Buzón {INSPECTOR.email}</a>
         </Button>
