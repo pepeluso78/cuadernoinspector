@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import type { Centro, Evento } from "@/lib/queries";
+import { nombreArchivoResena } from "@/lib/visitas";
 import logoAsset from "@/assets/jccm-logo.asset.json";
 
 export async function crearResenaPDF(visita: Evento, centro: Centro, logoBytes?: ArrayBuffer) {
@@ -80,7 +81,7 @@ export async function descargarResenaPDF(visita: Evento, centro: Centro) {
   const bytes = await crearResenaPDF(visita, centro);
   const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: "application/pdf" }));
   const link = document.createElement("a");
-  link.href = url; link.download = `Resena_${centro.codigo_centro}_${visita.fecha_inicio.slice(0, 10)}.pdf`;
+  link.href = url; link.download = nombreArchivoResena(visita.fecha_inicio, centro.codigo_centro);
   document.body.appendChild(link); link.click(); link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
