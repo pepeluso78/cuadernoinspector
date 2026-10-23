@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { centrosQuery, checklistsQuery } from "@/lib/queries";
 import { CATEGORIAS, ETIQUETA_CATEGORIA, estadoGlobal, generarRequerimiento, itemsIniciales, type Categoria, type EstadoItem, type ItemChecklist } from "@/lib/checklists";
 import { cn } from "@/lib/utils";
+import { useConfiguracion } from "@/lib/configuracion";
 
 export const Route = createFileRoute("/_authenticated/checklists")({
   validateSearch: (s: Record<string, unknown>): { centro?: string } => (typeof s["centro"] === "string" ? { centro: s["centro"] } : {}),
@@ -73,6 +74,7 @@ function PanelCentro({ centroId, cat, setCat }: { centroId: string; cat: Categor
 }
 
 function EditorChecklist({ centroId, cat, registro }: { centroId: string; cat: Categoria; registro: { items_verificacion: unknown; observaciones_inspector: string | null; requerimiento_generado: string | null; fecha_supervision: string | null } | undefined }) {
+  const config = useConfiguracion();
   const qc = useQueryClient();
   const { data: centros = [] } = useQuery(centrosQuery);
   const centro = centros.find((c) => c.id === centroId);
@@ -138,8 +140,8 @@ function EditorChecklist({ centroId, cat, registro }: { centroId: string; cat: C
       <section className="panel space-y-3 p-4 xl:col-span-2">
         <h3 className="font-semibold">Documento generado</h3>
         <div className="flex flex-wrap gap-2">
-          <Button variant="crimson" size="sm" disabled={!centro} onClick={() => setTexto(generarRequerimiento(centro!, cat, items, obs, "requerimiento"))}><FileText className="h-3.5 w-3.5" /> Generar requerimiento</Button>
-          <Button variant="outline" size="sm" disabled={!centro} onClick={() => setTexto(generarRequerimiento(centro!, cat, items, obs, "acta"))}><FileText className="h-3.5 w-3.5" /> Generar acta</Button>
+          <Button variant="crimson" size="sm" disabled={!centro} onClick={() => { if (centro) setTexto(generarRequerimiento(centro, cat, items, obs, "requerimiento", config)); }}><FileText className="h-3.5 w-3.5" /> Generar requerimiento</Button>
+          <Button variant="outline" size="sm" disabled={!centro} onClick={() => { if (centro) setTexto(generarRequerimiento(centro, cat, items, obs, "acta", config)); }}><FileText className="h-3.5 w-3.5" /> Generar acta</Button>
           <Button variant="ghost" size="sm" onClick={() => { navigator.clipboard.writeText(texto); toast.success("Copiado"); }}><Copy className="h-3.5 w-3.5" /> Copiar</Button>
         </div>
         <Textarea rows={22} className="font-mono text-xs" value={texto} onChange={(e) => setTexto(e.target.value)} />

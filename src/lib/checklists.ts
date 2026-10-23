@@ -1,3 +1,4 @@
+import { CONFIG_INICIAL, nombreInspector, type Configuracion } from "@/lib/configuracion";
 export const CATEGORIAS = [
   "Plan de Mejora",
   "Horarios",
@@ -72,15 +73,16 @@ export function generarRequerimiento(
   items: ItemChecklist[],
   observaciones: string,
   tipo: "requerimiento" | "acta",
+  config: Configuracion = CONFIG_INICIAL,
 ): string {
   const fecha = new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
   const subsanar = items.filter((i) => i.estado === "Subsanar");
   const conformes = items.filter((i) => i.estado === "Conforme");
   const pendientes = items.filter((i) => i.estado === "Pendiente");
   const linea = (i: ItemChecklist, n: number) => `${n + 1}. ${i.texto}${i.obs ? ` — ${i.obs}` : ""}`;
-  const cab = `DELEGACIÓN PROVINCIAL DE EDUCACIÓN, CULTURA Y DEPORTES DE ALBACETE\nServicio de Inspección de Educación\n\n`;
+  const cab = `DELEGACIÓN PROVINCIAL DE EDUCACIÓN, CULTURA Y DEPORTES DE ${config.provincia.toLocaleUpperCase("es")}\nServicio de Inspección de Educación\n\n`;
   if (tipo === "requerimiento") {
-    return `${cab}ASUNTO: Requerimiento de subsanación — ${ETIQUETA_CATEGORIA[cat]}\nCENTRO: ${centro.nombre} (${centro.codigo_centro})\n\nEn el ejercicio de las funciones atribuidas a la Inspección de Educación por el artículo 151 de la Ley Orgánica 2/2006, de Educación, y el Decreto 34/2008, de 26 de febrero, tras la supervisión realizada se REQUIERE a la Dirección del centro la subsanación de los siguientes aspectos:\n\n${subsanar.length ? subsanar.map(linea).join("\n") : "(No se han detectado aspectos a subsanar)"}\n\n${observaciones ? `Observaciones: ${observaciones}\n\n` : ""}Deberá remitir la documentación corregida a esta Inspección en el plazo de 10 días hábiles.\n\nAlbacete, ${fecha}\n\nEl Inspector de Educación\nFdo.: José Luis Martínez García`;
+    return `${cab}ASUNTO: Requerimiento de subsanación — ${ETIQUETA_CATEGORIA[cat]}\nCENTRO: ${centro.nombre} (${centro.codigo_centro})\n\nEn el ejercicio de las funciones atribuidas a la Inspección de Educación por el artículo 151 de la Ley Orgánica 2/2006, de Educación, y el Decreto 34/2008, de 26 de febrero, tras la supervisión realizada se REQUIERE a la Dirección del centro la subsanación de los siguientes aspectos:\n\n${subsanar.length ? subsanar.map(linea).join("\n") : "(No se han detectado aspectos a subsanar)"}\n\n${observaciones ? `Observaciones: ${observaciones}\n\n` : ""}Deberá remitir la documentación corregida a esta Inspección en el plazo de 10 días hábiles.\n\n${config.provincia}, ${fecha}\n\n${config.cargo}\nFdo.: ${nombreInspector(config)}`;
   }
-  return `${cab}ACTA DE SUPERVISIÓN — ${ETIQUETA_CATEGORIA[cat]}\nCENTRO: ${centro.nombre} (${centro.codigo_centro})\nFECHA: ${fecha}\n\nASPECTOS CONFORMES:\n${conformes.map(linea).join("\n") || "—"}\n\nASPECTOS A SUBSANAR:\n${subsanar.map(linea).join("\n") || "—"}\n\nASPECTOS PENDIENTES DE REVISIÓN:\n${pendientes.map(linea).join("\n") || "—"}\n\n${observaciones ? `OBSERVACIONES DEL INSPECTOR:\n${observaciones}\n\n` : ""}El Inspector de Educación\nFdo.: José Luis Martínez García`;
+  return `${cab}ACTA DE SUPERVISIÓN — ${ETIQUETA_CATEGORIA[cat]}\nCENTRO: ${centro.nombre} (${centro.codigo_centro})\nFECHA: ${fecha}\n\nASPECTOS CONFORMES:\n${conformes.map(linea).join("\n") || "—"}\n\nASPECTOS A SUBSANAR:\n${subsanar.map(linea).join("\n") || "—"}\n\nASPECTOS PENDIENTES DE REVISIÓN:\n${pendientes.map(linea).join("\n") || "—"}\n\n${observaciones ? `OBSERVACIONES DEL INSPECTOR:\n${observaciones}\n\n` : ""}${config.cargo}\nFdo.: ${nombreInspector(config)}`;
 }
