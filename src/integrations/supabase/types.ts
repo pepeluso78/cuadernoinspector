@@ -208,6 +208,7 @@ export type Database = {
           nombre: string
           provincia: string
           tema: string
+          user_id: string | null
         }
         Insert: {
           apellidos?: string
@@ -217,6 +218,7 @@ export type Database = {
           nombre?: string
           provincia?: string
           tema?: string
+          user_id?: string | null
         }
         Update: {
           apellidos?: string
@@ -226,6 +228,7 @@ export type Database = {
           nombre?: string
           provincia?: string
           tema?: string
+          user_id?: string | null
         }
         Relationships: []
       }
