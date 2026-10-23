@@ -25,9 +25,10 @@ const larga =
   "Se le indica que el centro dispone de un plan de refuerzo y que la familia puede solicitar una reunión con la tutora y con el equipo directivo.";
 
 const casos: [string, Guardia, string][] = [
-  ["corta", base, "El centro no ha recibido la consulta."],
+  ["corta", { ...base, incidencia: "Consulta telefónica de la familia sobre el procedimiento de reclamación de notas." }, "CEIP Anton Díaz"],
   ["larga", { ...base, incidencia: larga, respuesta: larga }, "CEIP Anton Díaz"],
 ];
+
 
 for (const [nombre, g, centro] of casos) {
   const bytes = await crearGuardiaPDF(g, centro);
