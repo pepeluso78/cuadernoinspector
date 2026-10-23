@@ -293,6 +293,50 @@ export type Database = {
           },
         ]
       }
+      partes_ausencias: {
+        Row: {
+          centro_id: string
+          created_at: string
+          curso_escolar: string
+          fecha_presentacion: string | null
+          id: string
+          mes: string
+          observaciones: string | null
+          presentado: boolean
+          updated_at: string
+        }
+        Insert: {
+          centro_id: string
+          created_at?: string
+          curso_escolar?: string
+          fecha_presentacion?: string | null
+          id?: string
+          mes: string
+          observaciones?: string | null
+          presentado?: boolean
+          updated_at?: string
+        }
+        Update: {
+          centro_id?: string
+          created_at?: string
+          curso_escolar?: string
+          fecha_presentacion?: string | null
+          id?: string
+          mes?: string
+          observaciones?: string | null
+          presentado?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partes_ausencias_centro_id_fkey"
+            columns: ["centro_id"]
+            isOneToOne: false
+            referencedRelation: "centros"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tramites: {
         Row: {
           asunto: string
