@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Check, Minus } from "lucide-react";
+import { Check, Minus, Settings2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -23,9 +23,11 @@ const CURSO = "2026/2027";
 const MESES = ["Septiembre", "Octubre", "Noviembre", "Diciembre", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio"] as const;
 
 function PartesPage() {
-  const { data: centros = [] } = useQuery(centrosQuery);
+  const { data: todos = [] } = useQuery(centrosQuery);
   const { data: partes = [] } = useQuery(partesQuery(CURSO));
   const [sel, setSel] = useState<string | null>(null);
+  const [configurar, setConfigurar] = useState(false);
+  const centros = todos.filter((c) => c.supervisa_partes);
   const centroSel = centros.find((c) => c.id === sel) ?? centros[0];
 
   return (
@@ -33,9 +35,48 @@ function PartesPage() {
       <PageHeader eyebrow={`Módulo 6 · Curso ${CURSO}`} title="Partes de Ausencias">
         <p className="text-sm text-muted-foreground">Pulsa una celda para marcar o desmarcar el parte del mes.</p>
       </PageHeader>
+      <div className="mb-4 flex justify-end">
+        <Button variant="outline" size="sm" onClick={() => setConfigurar((v) => !v)}>
+          <Settings2 className="mr-1.5 h-4 w-4" />
+          {configurar ? "Ocultar configuración" : "Elegir centros"}
+        </Button>
+      </div>
+      {configurar && <ConfigCentros centros={todos} />}
       <MatrizPartes centros={centros} partes={partes} sel={centroSel?.id ?? null} onSel={setSel} />
       {centroSel && <DetalleCentro key={centroSel.id} centro={centroSel} partes={partes.filter((p) => p.centro_id === centroSel.id)} />}
     </div>
+  );
+}
+
+function ConfigCentros({ centros }: { centros: Centro[] }) {
+  const qc = useQueryClient();
+
+  async function toggle(c: Centro) {
+    const { error } = await supabase.from("centros").update({ supervisa_partes: !c.supervisa_partes }).eq("id", c.id);
+    if (error) { toast.error(error.message); return; }
+    qc.invalidateQueries({ queryKey: ["centros"] });
+  }
+
+  return (
+    <section className="panel mb-4 p-4">
+      <h2 className="mb-1 font-semibold">Centros con control de partes</h2>
+      <p className="mb-3 text-sm text-muted-foreground">
+        Desmarca los centros cuyos partes de ausencias no supervisas (escuelas infantiles, concertados…). No aparecerán en la matriz ni en el recuento de pendientes.
+      </p>
+      <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+        {centros.map((c) => (
+          <label key={c.id} className="flex cursor-pointer items-center gap-2 rounded border px-3 py-1.5 text-sm hover:bg-muted">
+            <input
+              type="checkbox"
+              checked={c.supervisa_partes}
+              onChange={() => toggle(c)}
+              className="h-4 w-4 accent-primary"
+            />
+            <span className={cn(!c.supervisa_partes && "text-muted-foreground line-through")}>{c.nombre}</span>
+          </label>
+        ))}
+      </div>
+    </section>
   );
 }
 
