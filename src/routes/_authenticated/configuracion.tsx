@@ -25,7 +25,7 @@ function ConfiguracionPage() {
  const [currentPassword, setCurrentPassword] = useState("");
  const [password, setPassword] = useState("");
  const [confirm, setConfirm] = useState("");
- useEffect(() => { supabase.auth.getUser().then(({ data: auth }) => setEmail(auth.user?.email ?? "")); }, []);
+ useEffect(() => { supabase.auth.getUser().then(({ data: auth }) => { setEmail(auth.user?.email ?? ""); if (auth.user) setF((prev) => ({ ...prev, user_id: auth.user!.id })); }); }, []);
  async function guardar(e: React.FormEvent) {
   e.preventDefault(); const parsed = configuracionSchema.safeParse(f);
   if (!parsed.success) { toast.error("Revisa los datos personales y el correo de referencia"); return; }
