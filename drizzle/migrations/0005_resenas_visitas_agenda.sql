@@ -1,0 +1,2 @@
+ALTER TABLE public.agenda_eventos ADD COLUMN IF NOT EXISTS inspector_visita text NOT NULL DEFAULT 'José Luis Martínez García', ADD COLUMN IF NOT EXISTS descripcion_visita text NOT NULL DEFAULT '', ADD COLUMN IF NOT EXISTS problemas_visita text NOT NULL DEFAULT '', ADD COLUMN IF NOT EXISTS recomendaciones_visita text NOT NULL DEFAULT '';
+COMMENT ON TABLE public.agenda_eventos IS 'Single source of truth for calendar events and visit register; visit reports live on Visita a Centro events.';
