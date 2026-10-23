@@ -1,5 +1,6 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Inbox, School, ClipboardCheck, CalendarDays, Library, LogOut, UserX, MapPin } from "lucide-react";
+import { LayoutDashboard, Inbox, School, ClipboardCheck, CalendarDays, Library, LogOut, UserX, MapPin, Settings } from "lucide-react";
+import { useEffect } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -14,7 +15,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
-import { INSPECTOR } from "@/lib/constants";
+import { useConfiguracion, nombreInspector, servicioProvincial } from "@/lib/configuracion";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -25,9 +26,12 @@ const items = [
   { title: "Agenda y Plazos", url: "/agenda", icon: CalendarDays },
   { title: "Registro de Visitas", url: "/visitas", icon: MapPin },
   { title: "Biblioteca Normativa CLM", url: "/normativa", icon: Library },
+  { title: "Configuración", url: "/configuracion", icon: Settings },
 ] as const;
 
 export function AppShell() {
+  const config = useConfiguracion();
+  useEffect(() => { document.documentElement.dataset.theme = config.tema; return () => { delete document.documentElement.dataset.theme; }; }, [config.tema]);
   const path = useRouterState({ select: (s) => s.location.pathname });
   return (
     <SidebarProvider>
@@ -38,7 +42,7 @@ export function AppShell() {
               <div className="h-7 w-1.5 shrink-0 bg-sidebar-primary" />
               <div className="overflow-hidden group-data-[collapsible=icon]:hidden">
                 <p className="text-sm font-bold tracking-wide text-sidebar-accent-foreground">SIE-CLM</p>
-                <p className="truncate text-[11px] text-sidebar-foreground/60">Inspección · Albacete</p>
+                <p className="truncate text-[11px] text-sidebar-foreground/60">Inspección · {config.provincia}</p>
               </div>
             </div>
           </SidebarHeader>
@@ -65,8 +69,8 @@ export function AppShell() {
           </SidebarContent>
           <SidebarFooter className="border-t border-sidebar-border">
             <div className="px-1 text-xs group-data-[collapsible=icon]:hidden">
-              <p className="font-semibold text-sidebar-accent-foreground">{INSPECTOR.nombre}</p>
-              <p className="text-sidebar-foreground/60">{INSPECTOR.email}</p>
+              <p className="font-semibold text-sidebar-accent-foreground">{nombreInspector(config)}</p>
+              <p className="text-sidebar-foreground/60">{config.cargo}</p>
             </div>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -82,9 +86,9 @@ export function AppShell() {
           <header className="sticky top-0 z-10 flex h-12 items-center gap-3 border-b bg-card/90 px-3 backdrop-blur">
             <SidebarTrigger />
             <span className="text-xs text-muted-foreground">
-              Delegación Provincial de Educación, Cultura y Deportes de Albacete
+              {servicioProvincial(config.provincia)}
             </span>
-            <span className="ml-auto h-1 w-16 bg-crimson" />
+            <span className="ml-auto h-1 w-16 shrink-0 bg-crimson" />
           </header>
           <main className="flex-1 p-4 md:p-6">
             <Outlet />

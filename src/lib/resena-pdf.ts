@@ -39,7 +39,7 @@ export async function crearResenaPDF(visita: Evento, centro: Centro, logoBytes?:
     page.drawText("CONSEJERÍA DE EDUCACIÓN", { x: 190, y: 778, font: bold, size: 12, color: ink });
     page.drawText("JUNTA DE COMUNIDADES DE CASTILLA-LA MANCHA", { x: 123, y: 760, font: bold, size: 11, color: ink });
     page.drawRectangle({ x: 42, y: 702, width: 511, height: 32, color: grey, borderColor: ink, borderWidth: 0.7 });
-    page.drawText("Delegación Provincial de Albacete", { x: 48, y: 719, font: bold, size: 10 });
+    page.drawText(`Delegación Provincial de ${visita.provincia_visita}`, { x: 48, y: 719, font: bold, size: 10 });
     page.drawText("Servicio de Inspección Educativa", { x: 48, y: 707, font: bold, size: 10 });
     page.drawText("RESEÑA DE VISITA", { x: 405, y: 713, font: bold, size: 11 });
     y = 682;
@@ -68,8 +68,8 @@ export async function crearResenaPDF(visita: Evento, centro: Centro, logoBytes?:
   box("Principales Problemas Detectados", visita.problemas_visita);
   box("Recomendaciones Formuladas", visita.recomendaciones_visita);
   if (y < 110) nextPage();
-  page.drawText(clean(`Albacete, a ${fecha}`), { x: 280, y: y - 12, font, size: 11 });
-  page.drawText("El Inspector,", { x: 340, y: y - 30, font, size: 11 });
+  page.drawText(clean(`${visita.provincia_visita}, a ${fecha}`), { x: 260, y: y - 12, font, size: 11 });
+  page.drawText(clean(visita.cargo_visita), { x: 260, y: y - 30, font, size: 11 });
   wrap(visita.inspector_visita, 270).forEach((line, i) => page.drawText(line, { x: 280, y: y - 47 - i * 15, font, size: 11 }));
   doc.getPages().forEach((p, i) => p.drawText(`${i + 1} / ${doc.getPageCount()}`, { x: 510, y: 35, font, size: 9 }));
   doc.setTitle(`Reseña de visita · ${centro.nombre}`);

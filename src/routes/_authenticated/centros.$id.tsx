@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { centroQuery, notasQuery, type Centro } from "@/lib/queries";
 import { CATEGORIAS_NOTA } from "@/lib/constants";
+import { useConfiguracion } from "@/lib/configuracion";
 
 export const Route = createFileRoute("/_authenticated/centros/$id")({
   head: () => ({ meta: [{ title: "Ficha de centro · SIE-CLM" }, { name: "description", content: "Ficha, equipo directivo y cuaderno de campo del centro." }, { property: "og:title", content: "Ficha de centro · SIE-CLM" }, { property: "og:description", content: "Ficha, equipo directivo y cuaderno de campo del centro." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -27,6 +28,7 @@ const CARGOS = [
 ] as const;
 
 function CentroPage() {
+  const config = useConfiguracion();
   const { id } = Route.useParams();
   const qc = useQueryClient();
   const { data: centro } = useQuery(centroQuery(id));
@@ -54,7 +56,7 @@ function CentroPage() {
           <h1 className="font-serif text-3xl font-semibold text-primary">{c.nombre}</h1>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => { if (!exportarCuadernoPDF(c, notas)) toast.error("Permite las ventanas emergentes para exportar"); }}><FileDown className="h-4 w-4" /> Exportar a PDF</Button>
+          <Button variant="outline" onClick={() => { if (!exportarCuadernoPDF(c, notas, config)) toast.error("Permite las ventanas emergentes para exportar"); }}><FileDown className="h-4 w-4" /> Exportar a PDF</Button>
           <Button variant="outline" asChild><Link to="/checklists" search={{ centro: id }}><ClipboardCheck className="h-4 w-4" /> Checklists</Link></Button>
           <Button onClick={guardar}>Guardar ficha</Button>
         </div>

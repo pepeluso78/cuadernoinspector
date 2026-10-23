@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditorVisita } from "@/components/editor-visita";
 import { centrosQuery, eventosQuery, type Evento } from "@/lib/queries";
 import { esVisita, resenaCompleta } from "@/lib/visitas";
+import { useConfiguracion } from "@/lib/configuracion";
 
 export const Route = createFileRoute("/_authenticated/visitas")({
   head: () => ({ meta: [{ title: "Registro de Visitas · SIE-CLM" }, { name: "description", content: "Visitas a centros de Albacete, reseñas y documentos de Inspección Educativa." }, { property: "og:title", content: "Registro de Visitas · SIE-CLM" }, { property: "og:description", content: "Registro de visitas, reseñas y seguimiento de los centros educativos de Albacete." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/_authenticated/visitas")({
 });
 
 function VisitasPage() {
+  const config = useConfiguracion();
   const { data: eventos } = useSuspenseQuery(eventosQuery);
   const { data: centros } = useSuspenseQuery(centrosQuery);
   const [busqueda, setBusqueda] = useState("");
@@ -26,7 +28,7 @@ function VisitasPage() {
   const [edit, setEdit] = useState<{ visita: Partial<Evento>; resena: boolean } | null>(null);
   const visitas = eventos.filter(esVisita).filter((v) => estado === "todas" || (estado === "realizadas" ? v.realizada : !v.realizada)).filter((v) => `${v.titulo} ${centros.find((c) => c.id === v.centro_id)?.nombre ?? ""}`.toLocaleLowerCase("es").includes(busqueda.toLocaleLowerCase("es"))).sort((a, b) => b.fecha_inicio.localeCompare(a.fecha_inicio));
   return <div>
-    <PageHeader eyebrow="Inspección Educativa · Albacete" title="Registro de Visitas"><Button onClick={() => setEdit({ visita: { fecha_inicio: format(new Date(), "yyyy-MM-dd'T'09:00"), titulo: "" }, resena: false })}><Plus className="h-4 w-4" />Nueva visita</Button></PageHeader>
+    <PageHeader eyebrow={`Inspección Educativa · ${config.provincia}`} title="Registro de Visitas"><Button onClick={() => setEdit({ visita: { fecha_inicio: format(new Date(), "yyyy-MM-dd'T'09:00"), titulo: "" }, resena: false })}><Plus className="h-4 w-4" />Nueva visita</Button></PageHeader>
     <div className="mb-5 flex flex-wrap items-center gap-3"><div className="relative min-w-0 flex-1 sm:max-w-sm"><Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input aria-label="Buscar visitas" className="pl-9" placeholder="Buscar centro u objetivo…" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} /></div><Tabs value={estado} onValueChange={setEstado}><TabsList><TabsTrigger value="todas">Todas</TabsTrigger><TabsTrigger value="previstas">Previstas</TabsTrigger><TabsTrigger value="realizadas">Realizadas</TabsTrigger></TabsList></Tabs><span className="ml-auto text-xs text-muted-foreground">{visitas.length} visitas</span></div>
     <div className="divide-y border-y">
       {visitas.map((v) => { const c = centros.find((centro) => centro.id === v.centro_id); return <article key={v.id} className="flex flex-wrap items-center gap-4 py-5">

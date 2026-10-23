@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { Check, FileDown, Save, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { INSPECTOR } from "@/lib/constants";
+import { useConfiguracion, nombreInspector } from "@/lib/configuracion";
 import { resenaCompleta } from "@/lib/visitas";
 import { descargarResenaPDF } from "@/lib/resena-pdf";
 import type { Centro, Evento } from "@/lib/queries";
@@ -17,7 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export function EditorVisita({ visita, centros, resena = false, onClose }: { visita: Partial<Evento>; centros: Centro[]; resena?: boolean; onClose: () => void }) {
   const qc = useQueryClient();
-  const [f, setF] = useState(() => ({ ...visita, fecha_inicio: format(new Date(visita.fecha_inicio ?? new Date()), "yyyy-MM-dd'T'HH:mm"), inspector_visita: visita.inspector_visita ?? INSPECTOR.nombre, descripcion_visita: visita.descripcion_visita ?? "", problemas_visita: visita.problemas_visita ?? "", recomendaciones_visita: visita.recomendaciones_visita ?? "" }));
+  const config = useConfiguracion();
+  const [f, setF] = useState(() => ({ ...visita, fecha_inicio: format(new Date(visita.fecha_inicio ?? new Date()), "yyyy-MM-dd'T'HH:mm"), inspector_visita: visita.inspector_visita ?? nombreInspector(config), cargo_visita: visita.cargo_visita ?? config.cargo, provincia_visita: visita.provincia_visita ?? config.provincia, descripcion_visita: visita.descripcion_visita ?? "", problemas_visita: visita.problemas_visita ?? "", recomendaciones_visita: visita.recomendaciones_visita ?? "" }));
   const [busy, setBusy] = useState(false);
   const centro = centros.find((c) => c.id === f.centro_id);
   async function guardar(pdf = false) {
@@ -25,7 +26,7 @@ export function EditorVisita({ visita, centros, resena = false, onClose }: { vis
     if (pdf && !resenaCompleta(f)) { toast.error("Completa los tres apartados de la reseña"); return; }
     setBusy(true);
     try {
-      const payload = { titulo: f.titulo.trim(), tipo_evento: "Visita a Centro", centro_id: centro.id, fecha_inicio: new Date(f.fecha_inicio).toISOString(), realizada: !!f.realizada, inspector_visita: f.inspector_visita.trim(), descripcion_visita: f.descripcion_visita, problemas_visita: f.problemas_visita, recomendaciones_visita: f.recomendaciones_visita };
+      const payload = { titulo: f.titulo.trim(), tipo_evento: "Visita a Centro", centro_id: centro.id, fecha_inicio: new Date(f.fecha_inicio).toISOString(), realizada: !!f.realizada, inspector_visita: f.inspector_visita.trim(), cargo_visita: f.cargo_visita, provincia_visita: f.provincia_visita, descripcion_visita: f.descripcion_visita, problemas_visita: f.problemas_visita, recomendaciones_visita: f.recomendaciones_visita };
       const result = f.id ? await supabase.from("agenda_eventos").update(payload).eq("id", f.id).select().single() : await supabase.from("agenda_eventos").insert(payload).select().single();
       if (result.error) throw result.error;
       await qc.invalidateQueries({ queryKey: ["eventos"] });
