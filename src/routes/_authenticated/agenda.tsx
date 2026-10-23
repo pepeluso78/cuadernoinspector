@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ import { centrosQuery, eventosQuery, type Evento } from "@/lib/queries";
 import { TIPOS_EVENTO } from "@/lib/constants";
 import { FESTIVOS, toISODate } from "@/lib/plazos";
 import { cn } from "@/lib/utils";
+import { EditorVisita } from "@/components/editor-visita";
 
 export const Route = createFileRoute("/_authenticated/agenda")({
   head: () => ({ meta: [{ title: "Agenda y Plazos · SIE-CLM" }, { name: "description", content: "Visitas, tareas y vencimientos de trámites." }, { property: "og:title", content: "Agenda y Plazos · SIE-CLM" }, { property: "og:description", content: "Visitas, tareas y vencimientos de trámites." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -112,7 +113,7 @@ function AgendaPage() {
           </div>
         </div>
       )}
-      <EditorEvento ev={edit} onClose={() => setEdit(null)} />
+      {edit?.tipo_evento === "Visita a Centro" ? <EditorVisita key={edit.id ?? "new"} visita={edit} centros={centros} onClose={() => setEdit(null)} /> : <EditorEvento ev={edit} onClose={() => setEdit(null)} />}
     </div>
   );
 }
@@ -141,7 +142,8 @@ function EditorEvento({ ev, onClose }: { ev: Partial<Evento> | null; onClose: ()
   }
   async function borrar() {
     if (!f.id) return;
-    await supabase.from("agenda_eventos").delete().eq("id", f.id);
+    const { error } = await supabase.from("agenda_eventos").delete().eq("id", f.id);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["eventos"] });
     onClose();
   }

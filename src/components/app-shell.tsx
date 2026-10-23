@@ -1,5 +1,5 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Inbox, School, ClipboardCheck, CalendarDays, Library, LogOut, UserX } from "lucide-react";
+import { LayoutDashboard, Inbox, School, ClipboardCheck, CalendarDays, Library, LogOut, UserX, MapPin } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -23,6 +23,7 @@ const items = [
   { title: "Checklists de Supervisión", url: "/checklists", icon: ClipboardCheck },
   { title: "Partes de Ausencias", url: "/partes", icon: UserX },
   { title: "Agenda y Plazos", url: "/agenda", icon: CalendarDays },
+  { title: "Registro de Visitas", url: "/visitas", icon: MapPin },
   { title: "Biblioteca Normativa CLM", url: "/normativa", icon: Library },
 ] as const;
 
