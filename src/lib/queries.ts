@@ -50,3 +50,9 @@ export const allChecklistsQuery = queryOptions({
   queryKey: ["checklists"],
   queryFn: async () => ok(await supabase.from("checklists_centro").select("*")),
 });
+export type ParteAusencias = Database["public"]["Tables"]["partes_ausencias"]["Row"];
+export const partesQuery = (curso: string) =>
+  queryOptions({
+    queryKey: ["partes", curso],
+    queryFn: async () => ok(await supabase.from("partes_ausencias").select("*").eq("curso_escolar", curso)),
+  });
