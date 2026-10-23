@@ -3,7 +3,7 @@ import { adjuntosCorreo, decodificarAdjunto, leerRespuestaBatch, type CorreoPart
 import { DOCUMENTOS_BUCKET, rutaDocumento } from "@/lib/documentos";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { busquedaCorreo, CORREO_INICIAL } from "@/lib/correo-filtro";
+import { asuntoValido, busquedaCorreo, CORREO_INICIAL } from "@/lib/correo-filtro";
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
 
@@ -62,7 +62,9 @@ export async function importarCorreos(cliente?: SupabaseClient<Database>) {
     const h = (n: string) => m.payload.headers.find((x) => x.name.toLowerCase() === n)?.value ?? "";
     // La búsqueda no sustituye la comprobación del remitente real.
     const from = h("from").match(/<([^>]+)>/)?.[1] ?? h("from").trim();
-    if (from.toLowerCase() !== remitenteConfigurado.toLowerCase()) continue;
+    const propia = perfil.emailAddress?.toLowerCase() === remitenteConfigurado.toLowerCase();
+    if (!propia && from.toLowerCase() !== remitenteConfigurado.toLowerCase()) continue;
+    if (!asuntoValido(h("subject"))) continue;
     const t = texto(m.payload);
     const cuerpo = t.plain ?? (t.html ? sinHtml(t.html) : "");
     let tramiteId = hechos.get(id);
