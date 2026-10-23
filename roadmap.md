@@ -14,4 +14,4 @@
 - [x] Añadir Actividades de Formación y Tareas de Coordinación a los eventos.
 - [x] Módulo Guardias con formulario y Reporte de Guardia en PDF.
 - [x] Mostrar las guardias en el calendario.
-- [ ] Imprimir PDF del mes o semana visible con todos sus eventos y guardias, o de los eventos pendientes desde hoy inclusive; verificar descarga.
+- [x] Imprimir PDF del mes o semana visible con todos sus eventos y guardias, o de los eventos pendientes desde hoy inclusive; descarga verificada con sesión iniciada y evento temporal retirado.
