@@ -86,6 +86,7 @@ export type Database = {
           secretario_email: string | null
           secretario_fecha_nombramiento: string | null
           secretario_nombre: string | null
+          supervisa_partes: boolean
           telefono: string | null
           tipo_centro: string | null
         }
@@ -106,6 +107,7 @@ export type Database = {
           secretario_email?: string | null
           secretario_fecha_nombramiento?: string | null
           secretario_nombre?: string | null
+          supervisa_partes?: boolean
           telefono?: string | null
           tipo_centro?: string | null
         }
@@ -126,6 +128,7 @@ export type Database = {
           secretario_email?: string | null
           secretario_fecha_nombramiento?: string | null
           secretario_nombre?: string | null
+          supervisa_partes?: boolean
           telefono?: string | null
           tipo_centro?: string | null
         }

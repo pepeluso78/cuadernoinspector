@@ -1,0 +1,2 @@
+ALTER TABLE public.centros ADD COLUMN supervisa_partes BOOLEAN NOT NULL DEFAULT true;
+COMMENT ON COLUMN public.centros.supervisa_partes IS 'false = el inspector no controla los partes de ausencias de este centro (escuelas infantiles, concertados, etc.)';
