@@ -11,6 +11,7 @@ export async function crearResenaPDF(visita: Evento, centro: Centro, logoBytes?:
   const logo = await doc.embedPng(logoBytes ?? await response?.arrayBuffer() ?? new ArrayBuffer(0));
   const ink = rgb(0.1, 0.1, 0.1), grey = rgb(0.85, 0.85, 0.85);
   const clean = (value: string) => [...value.replace(/\t/g, "    ")].map((char) => {
+    if (char === "\n" || char === "\r") return char;
     try { font.encodeText(char); return char; } catch { return "?"; }
   }).join("");
   const wrap = (text: string, width = 490) => {
