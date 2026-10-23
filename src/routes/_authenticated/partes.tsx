@@ -4,9 +4,11 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Check, Minus, Settings2 } from "lucide-react";
+import { Check, FileDown, Minus, Settings2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/app-shell";
+import { useConfiguracion } from "@/lib/configuracion";
+import { exportarPartePDF } from "@/lib/partes-pdf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -165,6 +167,7 @@ function MatrizPartes({ centros, partes, sel, onSel }: { centros: Centro[]; part
 
 function DetalleCentro({ centro, partes }: { centro: Centro; partes: ParteAusencias[] }) {
   const qc = useQueryClient();
+  const config = useConfiguracion();
   const mapa = new Map(partes.map((p) => [p.mes, p]));
   const [mes, setMes] = useState<string>(MESES[0]);
   const p = mapa.get(mes);
@@ -230,7 +233,12 @@ function DetalleCentro({ centro, partes }: { centro: Centro; partes: ParteAusenc
           <Textarea rows={3} placeholder="Incidencias, requerimientos al centro, número de ausencias…" value={obs} onChange={(e) => setObs(e.target.value)} />
         </div>
       </div>
-      <Button className="mt-3" onClick={guardar}>Guardar {mes}</Button>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button onClick={guardar}>Guardar {mes}</Button>
+        <Button variant="outline" onClick={() => exportarPartePDF(centro, partes, CURSO, config)}>
+          <FileDown className="h-4 w-4" /> Informe PDF del centro
+        </Button>
+      </div>
     </section>
   );
 }

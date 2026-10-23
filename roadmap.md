@@ -6,4 +6,6 @@
 - [x] Guardar adjuntos del correo en almacenamiento privado, sin duplicarlos y con reintento.
 - [x] Subir, consultar, descargar y eliminar documentos del trámite.
 - [x] Probar procesamiento de adjuntos y carga/descarga/persistencia/eliminación con sesión iniciada (14 pruebas correctas).
-- [ ] Comprobar un adjunto real reenviado desde JCCM: pendiente de recibir un correo que cumpla el filtro; la importación actual no encuentra correos nuevos.
+- [ ] Comprobar un adjunto real reenviado desde JCCM: pendiente de recibir un correo que cumpla el filtro; la importación actual no encuentra correos nuevos.- [x] Sustituir Decreto 34/2008 por Decreto 45/2026 (y Orden 2008/RD 2193/1995 derogados) en normativa.
+- [x] Botón de informe PDF por centro en Partes de Ausencias.
+- [x] Apuntar el botón del buzón a https://mail.google.com/mail/u/0/#inbox.
