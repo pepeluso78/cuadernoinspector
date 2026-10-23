@@ -31,7 +31,7 @@ const items = [
 
 export function AppShell() {
   const config = useConfiguracion();
-  useEffect(() => { document.documentElement.dataset.theme = config.tema; return () => { delete document.documentElement.dataset.theme; }; }, [config.tema]);
+  useEffect(() => { document.documentElement.dataset['theme'] = config.tema; return () => { delete document.documentElement.dataset['theme']; }; }, [config.tema]);
   const path = useRouterState({ select: (s) => s.location.pathname });
   return (
     <SidebarProvider>

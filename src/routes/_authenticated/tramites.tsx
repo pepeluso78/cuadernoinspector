@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { centrosQuery, normativaQuery, tramitesQuery, type Tramite } from "@/lib/queries";
 import { calcularFechaLimite, PLAZOS_POR_TIPO, toISODate, PLAZO_GENERAL } from "@/lib/plazos";
 import { BUZON_URL, ESTADOS_TRAMITE, INSPECTOR, ORIGENES, TIPOS_ACTUACION } from "@/lib/constants";
+import { useConfiguracion, nombreInspector } from "@/lib/configuracion";
 
 export const Route = createFileRoute("/_authenticated/tramites")({
   validateSearch: (s: Record<string, unknown>): { nuevo?: boolean } => (s["nuevo"] === true || s["nuevo"] === "true" ? { nuevo: true } : {}),
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/_authenticated/tramites")({
 const SIN_CENTRO = "__none";
 
 function TramitesPage() {
+  const config = useConfiguracion();
   const { nuevo } = Route.useSearch();
   const navigate = useNavigate();
   const { data: tramites = [] } = useQuery(tramitesQuery);
@@ -76,7 +78,7 @@ function TramitesPage() {
     <div>
       <PageHeader eyebrow="Módulo 1 · Regla de 10 días lectivos" title="Trámites y Correo">
         <Button variant="outline" asChild>
-          <a href={BUZON_URL} target="_blank" rel="noreferrer"><Mail className="h-4 w-4" /> Buzón {INSPECTOR.email}</a>
+          <a href={BUZON_URL} target="_blank" rel="noreferrer"><Mail className="h-4 w-4" /> Buzón {config.correo_referencia}</a>
         </Button>
         <Button variant="outline" disabled={importando} onClick={importar}><Inbox className="h-4 w-4" /> {importando ? "Leyendo correo…" : "Importar del correo"}</Button>
         <Button variant="crimson" onClick={() => setOpen(true)}><Plus className="h-4 w-4" /> Nueva Entrada / Nota Interior</Button>
@@ -213,6 +215,7 @@ function Campo({ label, children, full }: { label: string; children: React.React
 }
 
 function DetalleTramite({ tramite, onClose }: { tramite: Tramite | null; onClose: () => void }) {
+  const config = useConfiguracion();
   const qc = useQueryClient();
   const { data: normas = [] } = useQuery(normativaQuery);
   const [d, setD] = useState<Tramite | null>(tramite);
@@ -224,7 +227,7 @@ function DetalleTramite({ tramite, onClose }: { tramite: Tramite | null; onClose
   function plantilla() {
     if (!d) return;
     upd("borrador_informe",
-      `INFORME DE LA INSPECCIÓN DE EDUCACIÓN\n\nASUNTO: ${d.asunto}\nREF.: ${d.numero_registro ?? ""}\n\nANTECEDENTES DE HECHO\nPrimero.- Con fecha ${d.fecha_entrada} se recibe ${d.origen.toLowerCase()} remitida por ${d.remitente || "—"}.\n\nFUNDAMENTOS DE DERECHO\n\n\nCONCLUSIONES / PROPUESTA\n\n\nAlbacete, ${new Date().toLocaleDateString("es-ES")}\nEl Inspector de Educación\nFdo.: ${INSPECTOR.nombre}`);
+      `INFORME DE LA INSPECCIÓN DE EDUCACIÓN\n\nASUNTO: ${d.asunto}\nREF.: ${d.numero_registro ?? ""}\n\nANTECEDENTES DE HECHO\nPrimero.- Con fecha ${d.fecha_entrada} se recibe ${d.origen.toLowerCase()} remitida por ${d.remitente || "—"}.\n\nFUNDAMENTOS DE DERECHO\n\n\nCONCLUSIONES / PROPUESTA\n\n\n${config.provincia}, ${new Date().toLocaleDateString("es-ES")}\n${config.cargo}\nFdo.: ${nombreInspector(config)}`);
   }
   function insertarCita(cita: string) {
     if (!d) return;
@@ -286,7 +289,7 @@ function DetalleTramite({ tramite, onClose }: { tramite: Tramite | null; onClose
         </div>
         <div className="mt-4 space-y-1.5">
           <Label>Texto del correo / escrito recibido</Label>
-          <Textarea rows={6} placeholder={`Pega aquí el correo recibido en ${INSPECTOR.email}`} value={d.descripcion_entrada ?? ""} onChange={(e) => upd("descripcion_entrada", e.target.value)} />
+          <Textarea rows={6} placeholder={`Pega aquí el correo recibido en ${config.correo_referencia}`} value={d.descripcion_entrada ?? ""} onChange={(e) => upd("descripcion_entrada", e.target.value)} />
         </div>
         <DocumentosTramite key={d.id} tramiteId={d.id} />
         <div className="mt-4 grid gap-4 lg:grid-cols-3">
