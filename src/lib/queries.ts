@@ -56,3 +56,8 @@ export const partesQuery = (curso: string) =>
     queryKey: ["partes", curso],
     queryFn: async () => ok(await supabase.from("partes_ausencias").select("*").eq("curso_escolar", curso)),
   });
+export type Guardia = Database["public"]["Tables"]["guardias"]["Row"];
+export const guardiasQuery = queryOptions({
+  queryKey: ["guardias"],
+  queryFn: async () => ok(await supabase.from("guardias").select("*").order("fecha", { ascending: false })),
+});

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Plus, FileDown, Phone, Users } from "lucide-react";
@@ -11,19 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { centrosQuery } from "@/lib/queries";
+import { centrosQuery, guardiasQuery } from "@/lib/queries";
 import { useConfiguracion, nombreInspector } from "@/lib/configuracion";
 import { descargarGuardiaPDF, type Guardia } from "@/lib/guardia-pdf";
 import { cn } from "@/lib/utils";
-
-const guardiasQuery = queryOptions({
-  queryKey: ["guardias"],
-  queryFn: async () => {
-    const { data, error } = await supabase.from("guardias").select("*").order("fecha", { ascending: false });
-    if (error) throw new Error(error.message);
-    return data;
-  },
-});
 
 export const Route = createFileRoute("/_authenticated/guardias")({
   head: () => ({ meta: [{ title: "Guardias · SIE-CLM" }, { name: "description", content: "Registro de incidencias atendidas en las guardias de Inspección." }, { property: "og:title", content: "Guardias · SIE-CLM" }, { property: "og:description", content: "Registro de incidencias atendidas en las guardias de Inspección." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
