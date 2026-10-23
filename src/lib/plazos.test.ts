@@ -3,15 +3,15 @@ import { calcularFechaLimite, diasRestantes, semaforo, esLectivo, parseISODate }
 
 describe("plazos de trámites (días lectivos)", () => {
   it("por defecto suma 10 días lectivos saltando fines de semana", () => {
-    // entrada jueves 22 oct 2026 → 23, 26-30 oct, 2-5 nov (1 nov es domingo)
-    expect(calcularFechaLimite("2026-10-22")).toBe("2026-11-05");
+    // entrada jueves 22 oct 2026 → 23, 26-30 oct, 3-6 nov (1 nov domingo, 2 nov festivo)
+    expect(calcularFechaLimite("2026-10-22")).toBe("2026-11-06");
   });
   it("reclamación urgente: 2 días lectivos", () => {
     // jueves 22 oct → viernes 23 y lunes 26
     expect(calcularFechaLimite("2026-10-22", 2)).toBe("2026-10-26");
   });
   it("expedientes de 30 días lectivos cruzan de mes", () => {
-    expect(calcularFechaLimite("2026-10-22", 30)).toBe("2026-12-03");
+    expect(calcularFechaLimite("2026-10-22", 30)).toBe("2026-12-04");
   });
   it("no cuenta el festivo local de Albacete del 8 de septiembre", () => {
     // entrada lunes 7 sep 2026, 2 días: 8 sep festivo → 9 y 10 sep
