@@ -16,6 +16,7 @@ import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedChecklistsRouteImport } from './routes/_authenticated/checklists'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedNormativaRouteImport } from './routes/_authenticated/normativa'
+import { Route as AuthenticatedPartesRouteImport } from './routes/_authenticated/partes'
 import { Route as AuthenticatedTramitesRouteImport } from './routes/_authenticated/tramites'
 import { Route as AuthenticatedCentrosIndexRouteImport } from './routes/_authenticated/centros.index'
 import { Route as AuthenticatedCentrosIdRouteImport } from './routes/_authenticated/centros.$id'
@@ -55,6 +56,11 @@ const AuthenticatedNormativaRoute = AuthenticatedNormativaRouteImport.update({
   path: '/normativa',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPartesRoute = AuthenticatedPartesRouteImport.update({
+  id: '/partes',
+  path: '/partes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTramitesRoute = AuthenticatedTramitesRouteImport.update({
   id: '/tramites',
   path: '/tramites',
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/checklists': typeof AuthenticatedChecklistsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/normativa': typeof AuthenticatedNormativaRoute
+  '/partes': typeof AuthenticatedPartesRoute
   '/tramites': typeof AuthenticatedTramitesRoute
   '/centros/$id': typeof AuthenticatedCentrosIdRoute
   '/centros/': typeof AuthenticatedCentrosIndexRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/checklists': typeof AuthenticatedChecklistsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/normativa': typeof AuthenticatedNormativaRoute
+  '/partes': typeof AuthenticatedPartesRoute
   '/tramites': typeof AuthenticatedTramitesRoute
   '/centros/$id': typeof AuthenticatedCentrosIdRoute
   '/centros': typeof AuthenticatedCentrosIndexRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/_authenticated/checklists': typeof AuthenticatedChecklistsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/normativa': typeof AuthenticatedNormativaRoute
+  '/_authenticated/partes': typeof AuthenticatedPartesRoute
   '/_authenticated/tramites': typeof AuthenticatedTramitesRoute
   '/_authenticated/centros/$id': typeof AuthenticatedCentrosIdRoute
   '/_authenticated/centros/': typeof AuthenticatedCentrosIndexRoute
@@ -125,6 +134,7 @@ export interface FileRouteTypes {
     | '/checklists'
     | '/dashboard'
     | '/normativa'
+    | '/partes'
     | '/tramites'
     | '/centros/$id'
     | '/centros/'
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/checklists'
     | '/dashboard'
     | '/normativa'
+    | '/partes'
     | '/tramites'
     | '/centros/$id'
     | '/centros'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/_authenticated/checklists'
     | '/_authenticated/dashboard'
     | '/_authenticated/normativa'
+    | '/_authenticated/partes'
     | '/_authenticated/tramites'
     | '/_authenticated/centros/$id'
     | '/_authenticated/centros/'
@@ -214,6 +226,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNormativaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/partes': {
+      id: '/_authenticated/partes'
+      path: '/partes'
+      fullPath: '/partes'
+      preLoaderRoute: typeof AuthenticatedPartesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/tramites': {
       id: '/_authenticated/tramites'
       path: '/tramites'
@@ -250,6 +269,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedChecklistsRoute: typeof AuthenticatedChecklistsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedNormativaRoute: typeof AuthenticatedNormativaRoute
+  AuthenticatedPartesRoute: typeof AuthenticatedPartesRoute
   AuthenticatedTramitesRoute: typeof AuthenticatedTramitesRoute
   AuthenticatedCentrosIdRoute: typeof AuthenticatedCentrosIdRoute
   AuthenticatedCentrosIndexRoute: typeof AuthenticatedCentrosIndexRoute
@@ -260,6 +280,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChecklistsRoute: AuthenticatedChecklistsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedNormativaRoute: AuthenticatedNormativaRoute,
+  AuthenticatedPartesRoute: AuthenticatedPartesRoute,
   AuthenticatedTramitesRoute: AuthenticatedTramitesRoute,
   AuthenticatedCentrosIdRoute: AuthenticatedCentrosIdRoute,
   AuthenticatedCentrosIndexRoute: AuthenticatedCentrosIndexRoute,
