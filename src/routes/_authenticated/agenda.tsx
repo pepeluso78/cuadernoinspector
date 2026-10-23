@@ -20,7 +20,6 @@ import { centrosQuery, eventosQuery, type Evento } from "@/lib/queries";
 import { TIPOS_EVENTO } from "@/lib/constants";
 import { FESTIVOS, toISODate } from "@/lib/plazos";
 import { cn } from "@/lib/utils";
-import { EditorVisita } from "@/components/editor-visita";
 
 export const Route = createFileRoute("/_authenticated/agenda")({
   head: () => ({ meta: [{ title: "Agenda y Plazos · SIE-CLM" }, { name: "description", content: "Visitas, tareas y vencimientos de trámites." }, { property: "og:title", content: "Agenda y Plazos · SIE-CLM" }, { property: "og:description", content: "Visitas, tareas y vencimientos de trámites." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -113,7 +112,7 @@ function AgendaPage() {
           </div>
         </div>
       )}
-      {edit?.tipo_evento === "Visita a Centro" ? <EditorVisita key={edit.id ?? "new"} visita={edit} centros={centros} onClose={() => setEdit(null)} /> : <EditorEvento ev={edit} onClose={() => setEdit(null)} />}
+      <EditorEvento ev={edit} onClose={() => setEdit(null)} />
     </div>
   );
 }
@@ -131,6 +130,7 @@ function EditorEvento({ ev, onClose }: { ev: Partial<Evento> | null; onClose: ()
 
   async function guardar() {
     if (!f.titulo?.trim() || !f.fecha_inicio) { toast.error("Título y fecha obligatorios"); return; }
+    if (f.tipo_evento === "Visita a Centro" && !f.centro_id) { toast.error("Selecciona el centro de la visita"); return; }
     const payload = {
       titulo: f.titulo, tipo_evento: f.tipo_evento ?? "Visita a Centro", centro_id: f.centro_id ?? null,
       fecha_inicio: new Date(f.fecha_inicio).toISOString(), realizada: !!f.realizada, notas_visita: f.notas_visita ?? null,
@@ -179,6 +179,7 @@ function EditorEvento({ ev, onClose }: { ev: Partial<Evento> | null; onClose: ()
         </div>
         {!esVencimiento && (
           <DialogFooter className="gap-2">
+            {f.id && f.tipo_evento === "Visita a Centro" && <Button asChild variant="outline"><Link to="/visitas">Registro de visitas</Link></Button>}
             {f.id && <Button variant="ghost" onClick={borrar}>Eliminar</Button>}
             <Button onClick={guardar}>Guardar</Button>
           </DialogFooter>

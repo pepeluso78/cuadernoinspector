@@ -18,6 +18,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedNormativaRouteImport } from './routes/_authenticated/normativa'
 import { Route as AuthenticatedPartesRouteImport } from './routes/_authenticated/partes'
 import { Route as AuthenticatedTramitesRouteImport } from './routes/_authenticated/tramites'
+import { Route as AuthenticatedVisitasRouteImport } from './routes/_authenticated/visitas'
 import { Route as AuthenticatedCentrosIndexRouteImport } from './routes/_authenticated/centros.index'
 import { Route as AuthenticatedCentrosIdRouteImport } from './routes/_authenticated/centros.$id'
 import { Route as ApiPublicJobsImportarCorreoRouteImport } from './routes/api/public/jobs/importar-correo'
@@ -66,6 +67,11 @@ const AuthenticatedTramitesRoute = AuthenticatedTramitesRouteImport.update({
   path: '/tramites',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedVisitasRoute = AuthenticatedVisitasRouteImport.update({
+  id: '/visitas',
+  path: '/visitas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCentrosIndexRoute =
   AuthenticatedCentrosIndexRouteImport.update({
     id: '/centros/',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/normativa': typeof AuthenticatedNormativaRoute
   '/partes': typeof AuthenticatedPartesRoute
   '/tramites': typeof AuthenticatedTramitesRoute
+  '/visitas': typeof AuthenticatedVisitasRoute
   '/centros/$id': typeof AuthenticatedCentrosIdRoute
   '/centros/': typeof AuthenticatedCentrosIndexRoute
   '/api/public/jobs/importar-correo': typeof ApiPublicJobsImportarCorreoRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/normativa': typeof AuthenticatedNormativaRoute
   '/partes': typeof AuthenticatedPartesRoute
   '/tramites': typeof AuthenticatedTramitesRoute
+  '/visitas': typeof AuthenticatedVisitasRoute
   '/centros/$id': typeof AuthenticatedCentrosIdRoute
   '/centros': typeof AuthenticatedCentrosIndexRoute
   '/api/public/jobs/importar-correo': typeof ApiPublicJobsImportarCorreoRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/_authenticated/normativa': typeof AuthenticatedNormativaRoute
   '/_authenticated/partes': typeof AuthenticatedPartesRoute
   '/_authenticated/tramites': typeof AuthenticatedTramitesRoute
+  '/_authenticated/visitas': typeof AuthenticatedVisitasRoute
   '/_authenticated/centros/$id': typeof AuthenticatedCentrosIdRoute
   '/_authenticated/centros/': typeof AuthenticatedCentrosIndexRoute
   '/api/public/jobs/importar-correo': typeof ApiPublicJobsImportarCorreoRoute
@@ -136,6 +145,7 @@ export interface FileRouteTypes {
     | '/normativa'
     | '/partes'
     | '/tramites'
+    | '/visitas'
     | '/centros/$id'
     | '/centros/'
     | '/api/public/jobs/importar-correo'
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/normativa'
     | '/partes'
     | '/tramites'
+    | '/visitas'
     | '/centros/$id'
     | '/centros'
     | '/api/public/jobs/importar-correo'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/_authenticated/normativa'
     | '/_authenticated/partes'
     | '/_authenticated/tramites'
+    | '/_authenticated/visitas'
     | '/_authenticated/centros/$id'
     | '/_authenticated/centros/'
     | '/api/public/jobs/importar-correo'
@@ -240,6 +252,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTramitesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/visitas': {
+      id: '/_authenticated/visitas'
+      path: '/visitas'
+      fullPath: '/visitas'
+      preLoaderRoute: typeof AuthenticatedVisitasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/centros/': {
       id: '/_authenticated/centros/'
       path: '/centros'
@@ -271,6 +290,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNormativaRoute: typeof AuthenticatedNormativaRoute
   AuthenticatedPartesRoute: typeof AuthenticatedPartesRoute
   AuthenticatedTramitesRoute: typeof AuthenticatedTramitesRoute
+  AuthenticatedVisitasRoute: typeof AuthenticatedVisitasRoute
   AuthenticatedCentrosIdRoute: typeof AuthenticatedCentrosIdRoute
   AuthenticatedCentrosIndexRoute: typeof AuthenticatedCentrosIndexRoute
 }
@@ -282,6 +302,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNormativaRoute: AuthenticatedNormativaRoute,
   AuthenticatedPartesRoute: AuthenticatedPartesRoute,
   AuthenticatedTramitesRoute: AuthenticatedTramitesRoute,
+  AuthenticatedVisitasRoute: AuthenticatedVisitasRoute,
   AuthenticatedCentrosIdRoute: AuthenticatedCentrosIdRoute,
   AuthenticatedCentrosIndexRoute: AuthenticatedCentrosIndexRoute,
 }
