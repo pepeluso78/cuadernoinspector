@@ -50,6 +50,13 @@
       "when": 1792765629674,
       "tag": "0006_configuracion_aplicacion",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792772011519,
+      "tag": "0007_guardias",
+      "breakpoints": true
     }
   ]
 }

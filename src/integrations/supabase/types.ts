@@ -273,6 +273,68 @@ export type Database = {
           },
         ]
       }
+      guardias: {
+        Row: {
+          cargo_guardia: string
+          centro_id: string | null
+          centro_texto: string
+          created_at: string
+          fecha: string
+          id: string
+          incidencia: string
+          inspector_centro: string
+          inspector_guardia: string
+          modalidad: string
+          persona_condicion: string
+          persona_contacto: string
+          persona_nombre: string
+          provincia_guardia: string
+          respuesta: string
+        }
+        Insert: {
+          cargo_guardia?: string
+          centro_id?: string | null
+          centro_texto?: string
+          created_at?: string
+          fecha?: string
+          id?: string
+          incidencia?: string
+          inspector_centro?: string
+          inspector_guardia?: string
+          modalidad?: string
+          persona_condicion?: string
+          persona_contacto?: string
+          persona_nombre?: string
+          provincia_guardia?: string
+          respuesta?: string
+        }
+        Update: {
+          cargo_guardia?: string
+          centro_id?: string | null
+          centro_texto?: string
+          created_at?: string
+          fecha?: string
+          id?: string
+          incidencia?: string
+          inspector_centro?: string
+          inspector_guardia?: string
+          modalidad?: string
+          persona_condicion?: string
+          persona_contacto?: string
+          persona_nombre?: string
+          provincia_guardia?: string
+          respuesta?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guardias_centro_id_fkey"
+            columns: ["centro_id"]
+            isOneToOne: false
+            referencedRelation: "centros"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       normativa_clm: {
         Row: {
           bloque_tematico: string
