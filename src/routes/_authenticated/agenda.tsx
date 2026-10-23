@@ -32,6 +32,8 @@ const color: Record<string, string> = {
   "Vencimiento Trámite": "bg-crimson text-crimson-foreground",
   "Reunión Inspección": "bg-secondary text-secondary-foreground",
   "Tarea Despacho": "bg-warn-soft text-warn",
+  "Actividades de Formación": "bg-ok-soft text-ok",
+  "Tareas de Coordinación": "bg-accent text-accent-foreground ring-1 ring-border",
 };
 const SIN = "__none";
 

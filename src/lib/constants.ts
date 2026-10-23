@@ -8,5 +8,5 @@ export const BIBLIOTECA_URL = "https://educacion.castillalamancha.es/biblioteca-
 export const ORIGENES = ["Nota Interior", "Escrito de Entrada", "Correo jlmgarcia@jccm.es", "Reclamación"];
 export const TIPOS_ACTUACION = ["Informe Nota Interior", "Respuesta Escrito", "Requerimiento Centro", "Informe Específico"];
 export const ESTADOS_TRAMITE = ["Pendiente", "En estudio", "En redacción", "Respondido / Elevado"];
-export const TIPOS_EVENTO = ["Visita a Centro", "Reunión Inspección", "Tarea Despacho", "Vencimiento Trámite"];
+export const TIPOS_EVENTO = ["Visita a Centro", "Reunión Inspección", "Tarea Despacho", "Actividades de Formación", "Tareas de Coordinación", "Vencimiento Trámite"];
 export const CATEGORIAS_NOTA = ["Incidencia", "Conversación", "Documento", "Otros"];
