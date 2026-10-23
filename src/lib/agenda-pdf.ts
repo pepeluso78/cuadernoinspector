@@ -88,7 +88,7 @@ export async function crearAgendaPDF(opciones: Opciones, logoBytes?: ArrayBuffer
           const date = format(d, "yyyy-MM-dd"), x = margin + i * col;
           page.drawRectangle({ x, y: y - rowHeight, width: col, height: rowHeight, borderColor: border, borderWidth: 0.5, ...(FESTIVOS[date] ? { color: holiday } : d.getDay() === 0 || d.getDay() === 6 ? { color: pale } : {}) });
           text(`${format(d, "d/MM")}${offset ? " (cont.)" : ""}`, x + 5, y - 14, 9, true, FESTIVOS[date] ? crimson : ink);
-          cells[i].slice(offset, offset + count).forEach((l, j) => text(l, x + 5, y - 28 - j * 10, 8));
+          (cells[i] ?? []).slice(offset, offset + count).forEach((l, j) => text(l, x + 5, y - 28 - j * 10, 8));
         });
         y -= rowHeight;
         offset += count;
