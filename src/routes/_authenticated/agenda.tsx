@@ -6,7 +6,7 @@ import {
   addDays, addMonths, addWeeks, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, startOfMonth, startOfWeek,
 } from "date-fns";
 import { es } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Check, Printer, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import { TIPOS_EVENTO } from "@/lib/constants";
 import { FESTIVOS, toISODate } from "@/lib/plazos";
 import { cn } from "@/lib/utils";
 import { useConfiguracion, nombreInspector } from "@/lib/configuracion";
+import { entradasAgenda, type VistaAgenda } from "@/lib/agenda-export";
 
 export const Route = createFileRoute("/_authenticated/agenda")({
   head: () => ({ meta: [{ title: "Agenda y Plazos · SIE-CLM" }, { name: "description", content: "Visitas, tareas y vencimientos de trámites." }, { property: "og:title", content: "Agenda y Plazos · SIE-CLM" }, { property: "og:description", content: "Visitas, tareas y vencimientos de trámites." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -38,10 +39,15 @@ const color: Record<string, string> = {
 const SIN = "__none";
 
 function AgendaPage() {
-  const { data: eventos = [] } = useQuery(eventosQuery);
-  const { data: centros = [] } = useQuery(centrosQuery);
-  const { data: guardias = [] } = useQuery(guardiasQuery);
-  const [vista, setVista] = useState("mes");
+  const eventosEstado = useQuery(eventosQuery);
+  const centrosEstado = useQuery(centrosQuery);
+  const guardiasEstado = useQuery(guardiasQuery);
+  const eventos = eventosEstado.data ?? [];
+  const centros = centrosEstado.data ?? [];
+  const guardias = guardiasEstado.data ?? [];
+  const config = useConfiguracion();
+  const [imprimiendo, setImprimiendo] = useState(false);
+  const [vista, setVista] = useState<VistaAgenda>("mes");
   const [ref, setRef] = useState(new Date());
   const [edit, setEdit] = useState<Partial<Evento> | null>(null);
 
@@ -52,14 +58,29 @@ function AgendaPage() {
   const delDia = (d: Date) => eventos.filter((e) => isSameDay(new Date(e.fecha_inicio), d));
   const mover = (n: number) => setRef(vista === "semana" ? addWeeks(ref, n) : addMonths(ref, n));
   const nombreCentro = (id: string | null) => centros.find((c) => c.id === id)?.nombre;
+  const pendientes = entradasAgenda(eventos, [], centros, "agenda", ref);
+  const datosListos = [eventosEstado, centrosEstado, guardiasEstado].every((q) => q.isSuccess && !q.isFetching);
+  async function imprimir() {
+    setImprimiendo(true);
+    try {
+      const hoy = new Date();
+      const { descargarAgendaPDF } = await import("@/lib/agenda-pdf");
+      await descargarAgendaPDF({ vista, referencia: ref, hoy, entradas: entradasAgenda(eventos, guardias, centros, vista, ref, hoy), inspector: nombreInspector(config), provincia: config.provincia });
+    } catch (error) { toast.error(error instanceof Error ? error.message : "No se ha podido generar el PDF"); }
+    finally { setImprimiendo(false); }
+  }
 
   return (
     <div>
       <PageHeader eyebrow="Módulo 4" title="Agenda y Control de Plazos">
+        <Button variant="outline" onClick={imprimir} disabled={imprimiendo || !datosListos}>
+          {imprimiendo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
+          {vista === "agenda" ? "PDF de pendientes" : vista === "semana" ? "PDF de la semana" : "PDF del mes"}
+        </Button>
         <Button onClick={() => setEdit({ tipo_evento: "Visita a Centro", fecha_inicio: format(new Date(), "yyyy-MM-dd'T'09:00"), titulo: "" })}><Plus className="h-4 w-4" /> Nuevo evento</Button>
       </PageHeader>
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <Tabs value={vista} onValueChange={setVista}>
+        <Tabs value={vista} onValueChange={(v) => { if (v === "mes" || v === "semana" || v === "agenda") setVista(v); }}>
           <TabsList><TabsTrigger value="mes">Mes</TabsTrigger><TabsTrigger value="semana">Semana</TabsTrigger><TabsTrigger value="agenda">Agenda</TabsTrigger></TabsList>
         </Tabs>
         {vista !== "agenda" && (
@@ -81,12 +102,13 @@ function AgendaPage() {
 
       {vista === "agenda" ? (
         <ul className="panel divide-y">
-          {eventos.filter((e) => new Date(e.fecha_inicio) >= addDays(new Date(), -1)).map((e) => (
-            <li key={e.id} className="flex cursor-pointer items-center gap-4 px-4 py-3 hover:bg-accent/50" onClick={() => setEdit(e)}>
-              <span className="w-28 font-mono text-xs">{format(new Date(e.fecha_inicio), "EEE dd/MM HH:mm", { locale: es })}</span>
-              <span className={cn("rounded px-1.5 py-0.5 text-[10px] font-semibold", color[e.tipo_evento] ?? color["Tarea Despacho"])}>{e.tipo_evento}</span>
-              <span className={cn("flex-1 text-sm", e.realizada && "text-muted-foreground line-through")}>{e.titulo}</span>
-              <span className="text-xs text-muted-foreground">{nombreCentro(e.centro_id)}</span>
+          {!pendientes.length && <li className="px-4 py-6 text-sm text-muted-foreground">No hay eventos pendientes desde hoy.</li>}
+          {pendientes.map((e) => (
+            <li key={e.id} className="flex cursor-pointer flex-wrap items-center gap-4 px-4 py-3 hover:bg-accent/50" onClick={() => { const original = eventos.find((ev) => ev.id === e.id); if (original) setEdit(original); }}>
+              <span className="w-28 font-mono text-xs">{format(new Date(`${e.fecha}T${e.hora}`), "EEE dd/MM HH:mm", { locale: es })}</span>
+              <span className={cn("rounded px-1.5 py-0.5 text-[10px] font-semibold", color[e.tipo] ?? color["Tarea Despacho"])}>{e.tipo}</span>
+              <span className="min-w-40 flex-1 text-sm">{e.titulo}</span>
+              <span className="text-xs text-muted-foreground">{e.centro}</span>
             </li>
           ))}
         </ul>
