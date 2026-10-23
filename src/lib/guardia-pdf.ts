@@ -72,7 +72,7 @@ export async function crearGuardiaPDF(g: Guardia, centroNombre: string) {
     ...wrap(`Inspector/a del centro: ${g.inspector_centro || "—"}`),
     ...wrap(`Centro educativo: ${centroNombre || "—"}`),
   ]);
-  const amplia = (v: string) => (v.trim() ? 6 : 0);
+  const amplia = (v: string) => (v.trim() ? 3 : 0);
   box("Incidencia tratada", wrap(g.incidencia || "—"), amplia(g.incidencia || ""));
   box("Respuesta dada por el inspector de guardia", wrap(g.respuesta || "—"), amplia(g.respuesta || ""));
 
