@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { esVisita, resenaCompleta } from "./visitas";
+import { esVisita, nombreArchivoResena, resenaCompleta } from "./visitas";
 
 describe("Registro de visitas", () => {
   it("comparte las visitas del calendario y excluye otros eventos", () => {
