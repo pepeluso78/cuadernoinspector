@@ -36,7 +36,8 @@ export async function importarCorreos(cliente?: SupabaseClient<Database>) {
   const { data: config, error: configError } = await db.from("configuracion_aplicacion").select("correo_referencia").eq("id", 1).maybeSingle();
   if (configError) throw configError;
   const remitenteConfigurado = config?.correo_referencia ?? CORREO_INICIAL;
-  const q = encodeURIComponent(busquedaCorreo(remitenteConfigurado));
+  const perfil = (await gmail(`/users/me/profile`)) as { emailAddress?: string };
+  const q = encodeURIComponent(busquedaCorreo(remitenteConfigurado, perfil.emailAddress));
   const list = (await gmail(`/users/me/messages?maxResults=50&q=${q}`)) as { messages?: { id: string }[] };
   const ids = (list.messages ?? []).map((m) => m.id);
   if (!ids.length) return { creados: 0, adjuntos: 0, errores: [] as string[] };

@@ -3,7 +3,7 @@ export const INSPECTOR = {
   email: "jlmgarcia@jccm.es",
   unidad: "Servicio de Inspección de Educación · Delegación Provincial de Educación, Cultura y Deportes de Albacete",
 };
-export const BUZON_URL = "https://outlook.office.com/mail/";
+export const BUZON_URL = "https://mail.google.com/mail/u/?authuser=pepeluso@gmail.com";
 export const BIBLIOTECA_URL = "https://educacion.castillalamancha.es/biblioteca-normativa";
 export const ORIGENES = ["Nota Interior", "Escrito de Entrada", "Correo jlmgarcia@jccm.es", "Reclamación"];
 export const TIPOS_ACTUACION = ["Informe Nota Interior", "Respuesta Escrito", "Requerimiento Centro", "Informe Específico"];
