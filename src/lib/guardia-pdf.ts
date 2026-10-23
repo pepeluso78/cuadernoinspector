@@ -48,12 +48,12 @@ export async function crearGuardiaPDF(g: Guardia, centroNombre: string) {
     y = 682;
   }
   function nextPage() { page = doc.addPage([595.28, 841.89]); header(); }
-  function box(label: string, text: string) {
-    const lines = wrap(text || "—");
+  function box(label: string, lines: string[], minLines = 0) {
     let off = 0;
     do {
       if (y < 130) nextPage();
-      const count = Math.min(lines.length - off, Math.max(1, Math.floor((y - 96) / 15) - 2));
+      const want = off === 0 ? Math.max(lines.length, minLines) : lines.length;
+      const count = Math.min(want - off, Math.max(1, Math.floor((y - 96) / 15) - 2));
       const h = 31 + count * 15;
       page.drawRectangle({ x: 42, y: y - h, width: 511, height: h, borderColor: ink, borderWidth: 0.7 });
       page.drawText(label + (off ? " (continuación)" : ""), { x: 49, y: y - 15, font: bold, size: 11 });
@@ -64,12 +64,17 @@ export async function crearGuardiaPDF(g: Guardia, centroNombre: string) {
   }
   const fecha = new Date(`${g.fecha}T12:00:00`).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
   header();
-  box("Fecha de la guardia y modalidad", `Fecha: ${fecha}\nAtención: ${g.modalidad}`);
-  box("Persona atendida", `Nombre: ${g.persona_nombre}\nCondición: ${g.persona_condicion || "—"}\nContacto: ${g.persona_contacto || "—"}`);
-  box("Inspección", `Inspector/a de guardia: ${g.inspector_guardia}\nInspector/a del centro: ${g.inspector_centro || "—"}`);
-  box("Centro educativo", centroNombre || "—");
-  box("Incidencia tratada", g.incidencia);
-  box("Respuesta dada por el inspector de guardia", g.respuesta);
+  const persona = [g.persona_nombre, g.persona_condicion, g.persona_contacto].filter(Boolean).join(" · ");
+  box("Atención recibida", [
+    ...wrap(`Fecha: ${fecha} · Atención: ${g.modalidad}`),
+    ...wrap(`Persona atendida: ${persona || "—"}`),
+    ...wrap(`Inspector/a de guardia: ${g.inspector_guardia}`),
+    ...wrap(`Inspector/a del centro: ${g.inspector_centro || "—"}`),
+    ...wrap(`Centro educativo: ${centroNombre || "—"}`),
+  ]);
+  box("Incidencia tratada", wrap(g.incidencia || "—"), 6);
+  box("Respuesta dada por el inspector de guardia", wrap(g.respuesta || "—"), 6);
+
   if (y < 110) nextPage();
   page.drawText(clean(`${g.provincia_guardia}, a ${fecha}`), { x: 260, y: y - 12, font, size: 11 });
   page.drawText(clean(g.cargo_guardia), { x: 260, y: y - 30, font, size: 11 });
