@@ -29,6 +29,13 @@
       "when": 1792742180765,
       "tag": "0003_create_partes_ausencias",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792742395680,
+      "tag": "0004_centros_supervisa_partes",
+      "breakpoints": true
     }
   ]
 }
