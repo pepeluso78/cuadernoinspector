@@ -10,7 +10,7 @@ export type Configuracion = z.infer<typeof configuracionSchema>;
 export const CONFIG_INICIAL: Configuracion = { id: 1, nombre: "José Luis", apellidos: "Martínez García", cargo: "Inspector de Educación", provincia: "Albacete", correo_referencia: "jlmgarcia@jccm.es", tema: "institucional" };
 export const nombreInspector = (c: Configuracion) => `${c.nombre} ${c.apellidos}`.trim();
 export const servicioProvincial = (provincia: string) => `Delegación Provincial de Educación, Cultura y Deportes de ${provincia}`;
-export const busquedaCorreo = (email: string) => `from:${z.string().email().parse(email.trim().toLowerCase())} newer_than:30d -in:sent -in:chats`;
+export { busquedaCorreo } from "./correo-filtro";
 export const configuracionQuery = queryOptions({ queryKey: ["configuracion"], queryFn: async () => {
   const { data, error } = await supabase.from("configuracion_aplicacion").select("*").eq("id", 1).maybeSingle();
   if (error) throw error;

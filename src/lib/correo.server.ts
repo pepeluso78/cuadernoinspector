@@ -3,7 +3,7 @@ import { adjuntosCorreo, decodificarAdjunto, leerRespuestaBatch, type CorreoPart
 import { DOCUMENTOS_BUCKET, rutaDocumento } from "@/lib/documentos";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { busquedaCorreo, CONFIG_INICIAL } from "@/lib/configuracion";
+import { busquedaCorreo, CORREO_INICIAL } from "@/lib/correo-filtro";
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
 
@@ -35,7 +35,7 @@ export async function importarCorreos(cliente?: SupabaseClient<Database>) {
   const db = cliente ?? (await import("@/integrations/supabase/client.server")).supabaseAdmin;
   const { data: config, error: configError } = await db.from("configuracion_aplicacion").select("correo_referencia").eq("id", 1).maybeSingle();
   if (configError) throw configError;
-  const remitenteConfigurado = config?.correo_referencia ?? CONFIG_INICIAL.correo_referencia;
+  const remitenteConfigurado = config?.correo_referencia ?? CORREO_INICIAL;
   const q = encodeURIComponent(busquedaCorreo(remitenteConfigurado));
   const list = (await gmail(`/users/me/messages?maxResults=50&q=${q}`)) as { messages?: { id: string }[] };
   const ids = (list.messages ?? []).map((m) => m.id);
