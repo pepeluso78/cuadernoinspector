@@ -1,5 +1,6 @@
 import type { Centro } from "@/lib/queries";
 import { INSPECTOR } from "@/lib/constants";
+import { type Configuracion, CONFIG_INICIAL, nombreInspector } from "@/lib/configuracion";
 
 type Nota = { titulo: string; contenido: string | null; categoria: string | null; fecha_registro: string | null; importante: boolean | null };
 
@@ -8,7 +9,7 @@ const esc = (s: string | null | undefined) =>
 
 const ETIQUETAS: Record<string, string> = { Incidencia: "Incidencias", "Conversación": "Conversaciones", Documento: "Documentos", Otros: "Otros aspectos" };
 
-export function exportarCuadernoPDF(c: Centro, notas: Nota[]) {
+export function exportarCuadernoPDF(c: Centro, notas: Nota[], config: Configuracion = CONFIG_INICIAL) {
   const w = window.open("", "_blank");
   if (!w) return false;
   const fecha = (f: string | null) => (f ? new Date(f).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" }) : "");
@@ -38,7 +39,7 @@ td{border:1px solid #cbd5e1;padding:4px 6px}
 .pie{margin-top:24px;font:8pt Arial,sans-serif;color:#64748b}
 </style></head><body>
 <div class="cab"><div class="eyebrow">Cuaderno de Campo · ${esc(c.tipo_centro)} · ${esc(c.codigo_centro)} · ${esc(c.localidad)}</div>
-<h1>${esc(c.nombre)}</h1><div class="eyebrow">${esc(INSPECTOR.nombre)} · Inspección de Educación de Albacete</div></div>
+<h1>${esc(c.nombre)}</h1><div class="eyebrow">${esc(nombreInspector(config))} · ${esc(config.cargo)} · ${esc(config.provincia)}</div></div>
 <table>${cargo("Director/a", c.director_nombre, c.director_email)}${cargo("Jefe/a de Estudios", c.jefe_estudios_nombre, c.jefe_estudios_email)}${cargo("Secretario/a", c.secretario_nombre, c.secretario_email)}</table>
 ${secciones || "<p><em>Sin notas registradas.</em></p>"}
 <div class="pie">Exportado el ${new Date().toLocaleString("es-ES")}</div>

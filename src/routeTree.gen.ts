@@ -14,10 +14,12 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
 import { Route as AuthenticatedChecklistsRouteImport } from './routes/_authenticated/checklists'
+import { Route as AuthenticatedConfiguracionRouteImport } from './routes/_authenticated/configuracion'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedNormativaRouteImport } from './routes/_authenticated/normativa'
 import { Route as AuthenticatedPartesRouteImport } from './routes/_authenticated/partes'
 import { Route as AuthenticatedTramitesRouteImport } from './routes/_authenticated/tramites'
+import { Route as AuthenticatedVisitasRouteImport } from './routes/_authenticated/visitas'
 import { Route as AuthenticatedCentrosIndexRouteImport } from './routes/_authenticated/centros.index'
 import { Route as AuthenticatedCentrosIdRouteImport } from './routes/_authenticated/centros.$id'
 import { Route as ApiPublicJobsImportarCorreoRouteImport } from './routes/api/public/jobs/importar-correo'
@@ -46,6 +48,12 @@ const AuthenticatedChecklistsRoute = AuthenticatedChecklistsRouteImport.update({
   path: '/checklists',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConfiguracionRoute =
+  AuthenticatedConfiguracionRouteImport.update({
+    id: '/configuracion',
+    path: '/configuracion',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -64,6 +72,11 @@ const AuthenticatedPartesRoute = AuthenticatedPartesRouteImport.update({
 const AuthenticatedTramitesRoute = AuthenticatedTramitesRouteImport.update({
   id: '/tramites',
   path: '/tramites',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedVisitasRoute = AuthenticatedVisitasRouteImport.update({
+  id: '/visitas',
+  path: '/visitas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCentrosIndexRoute =
@@ -89,10 +102,12 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/agenda': typeof AuthenticatedAgendaRoute
   '/checklists': typeof AuthenticatedChecklistsRoute
+  '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/normativa': typeof AuthenticatedNormativaRoute
   '/partes': typeof AuthenticatedPartesRoute
   '/tramites': typeof AuthenticatedTramitesRoute
+  '/visitas': typeof AuthenticatedVisitasRoute
   '/centros/$id': typeof AuthenticatedCentrosIdRoute
   '/centros/': typeof AuthenticatedCentrosIndexRoute
   '/api/public/jobs/importar-correo': typeof ApiPublicJobsImportarCorreoRoute
@@ -102,10 +117,12 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/agenda': typeof AuthenticatedAgendaRoute
   '/checklists': typeof AuthenticatedChecklistsRoute
+  '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/normativa': typeof AuthenticatedNormativaRoute
   '/partes': typeof AuthenticatedPartesRoute
   '/tramites': typeof AuthenticatedTramitesRoute
+  '/visitas': typeof AuthenticatedVisitasRoute
   '/centros/$id': typeof AuthenticatedCentrosIdRoute
   '/centros': typeof AuthenticatedCentrosIndexRoute
   '/api/public/jobs/importar-correo': typeof ApiPublicJobsImportarCorreoRoute
@@ -117,10 +134,12 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/checklists': typeof AuthenticatedChecklistsRoute
+  '/_authenticated/configuracion': typeof AuthenticatedConfiguracionRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/normativa': typeof AuthenticatedNormativaRoute
   '/_authenticated/partes': typeof AuthenticatedPartesRoute
   '/_authenticated/tramites': typeof AuthenticatedTramitesRoute
+  '/_authenticated/visitas': typeof AuthenticatedVisitasRoute
   '/_authenticated/centros/$id': typeof AuthenticatedCentrosIdRoute
   '/_authenticated/centros/': typeof AuthenticatedCentrosIndexRoute
   '/api/public/jobs/importar-correo': typeof ApiPublicJobsImportarCorreoRoute
@@ -132,10 +151,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/agenda'
     | '/checklists'
+    | '/configuracion'
     | '/dashboard'
     | '/normativa'
     | '/partes'
     | '/tramites'
+    | '/visitas'
     | '/centros/$id'
     | '/centros/'
     | '/api/public/jobs/importar-correo'
@@ -145,10 +166,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/agenda'
     | '/checklists'
+    | '/configuracion'
     | '/dashboard'
     | '/normativa'
     | '/partes'
     | '/tramites'
+    | '/visitas'
     | '/centros/$id'
     | '/centros'
     | '/api/public/jobs/importar-correo'
@@ -159,10 +182,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/agenda'
     | '/_authenticated/checklists'
+    | '/_authenticated/configuracion'
     | '/_authenticated/dashboard'
     | '/_authenticated/normativa'
     | '/_authenticated/partes'
     | '/_authenticated/tramites'
+    | '/_authenticated/visitas'
     | '/_authenticated/centros/$id'
     | '/_authenticated/centros/'
     | '/api/public/jobs/importar-correo'
@@ -212,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChecklistsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/configuracion': {
+      id: '/_authenticated/configuracion'
+      path: '/configuracion'
+      fullPath: '/configuracion'
+      preLoaderRoute: typeof AuthenticatedConfiguracionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -238,6 +270,13 @@ declare module '@tanstack/react-router' {
       path: '/tramites'
       fullPath: '/tramites'
       preLoaderRoute: typeof AuthenticatedTramitesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/visitas': {
+      id: '/_authenticated/visitas'
+      path: '/visitas'
+      fullPath: '/visitas'
+      preLoaderRoute: typeof AuthenticatedVisitasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/centros/': {
@@ -267,10 +306,12 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
   AuthenticatedChecklistsRoute: typeof AuthenticatedChecklistsRoute
+  AuthenticatedConfiguracionRoute: typeof AuthenticatedConfiguracionRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedNormativaRoute: typeof AuthenticatedNormativaRoute
   AuthenticatedPartesRoute: typeof AuthenticatedPartesRoute
   AuthenticatedTramitesRoute: typeof AuthenticatedTramitesRoute
+  AuthenticatedVisitasRoute: typeof AuthenticatedVisitasRoute
   AuthenticatedCentrosIdRoute: typeof AuthenticatedCentrosIdRoute
   AuthenticatedCentrosIndexRoute: typeof AuthenticatedCentrosIndexRoute
 }
@@ -278,10 +319,12 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
   AuthenticatedChecklistsRoute: AuthenticatedChecklistsRoute,
+  AuthenticatedConfiguracionRoute: AuthenticatedConfiguracionRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedNormativaRoute: AuthenticatedNormativaRoute,
   AuthenticatedPartesRoute: AuthenticatedPartesRoute,
   AuthenticatedTramitesRoute: AuthenticatedTramitesRoute,
+  AuthenticatedVisitasRoute: AuthenticatedVisitasRoute,
   AuthenticatedCentrosIdRoute: AuthenticatedCentrosIdRoute,
   AuthenticatedCentrosIndexRoute: AuthenticatedCentrosIndexRoute,
 }

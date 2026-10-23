@@ -3,6 +3,7 @@ import { adjuntosCorreo, decodificarAdjunto, leerRespuestaBatch, type CorreoPart
 import { DOCUMENTOS_BUCKET, rutaDocumento } from "@/lib/documentos";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { busquedaCorreo, CORREO_INICIAL } from "@/lib/correo-filtro";
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
 
@@ -32,7 +33,10 @@ async function gmail(path: string) {
 /** Lee los correos reenviados de los últimos 30 días y crea los trámites que falten. */
 export async function importarCorreos(cliente?: SupabaseClient<Database>) {
   const db = cliente ?? (await import("@/integrations/supabase/client.server")).supabaseAdmin;
-  const q = encodeURIComponent("from:jlmgarcia@jccm.es newer_than:30d -in:sent -in:chats");
+  const { data: config, error: configError } = await db.from("configuracion_aplicacion").select("correo_referencia").eq("id", 1).maybeSingle();
+  if (configError) throw configError;
+  const remitenteConfigurado = config?.correo_referencia ?? CORREO_INICIAL;
+  const q = encodeURIComponent(busquedaCorreo(remitenteConfigurado));
   const list = (await gmail(`/users/me/messages?maxResults=50&q=${q}`)) as { messages?: { id: string }[] };
   const ids = (list.messages ?? []).map((m) => m.id);
   if (!ids.length) return { creados: 0, adjuntos: 0, errores: [] as string[] };
@@ -57,7 +61,7 @@ export async function importarCorreos(cliente?: SupabaseClient<Database>) {
     const h = (n: string) => m.payload.headers.find((x) => x.name.toLowerCase() === n)?.value ?? "";
     // La búsqueda no sustituye la comprobación del remitente real.
     const from = h("from").match(/<([^>]+)>/)?.[1] ?? h("from").trim();
-    if (from.toLowerCase() !== "jlmgarcia@jccm.es") continue;
+    if (from.toLowerCase() !== remitenteConfigurado.toLowerCase()) continue;
     const t = texto(m.payload);
     const cuerpo = t.plain ?? (t.html ? sinHtml(t.html) : "");
     let tramiteId = hechos.get(id);

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ import { centrosQuery, eventosQuery, type Evento } from "@/lib/queries";
 import { TIPOS_EVENTO } from "@/lib/constants";
 import { FESTIVOS, toISODate } from "@/lib/plazos";
 import { cn } from "@/lib/utils";
+import { useConfiguracion, nombreInspector } from "@/lib/configuracion";
 
 export const Route = createFileRoute("/_authenticated/agenda")({
   head: () => ({ meta: [{ title: "Agenda y Plazos · SIE-CLM" }, { name: "description", content: "Visitas, tareas y vencimientos de trámites." }, { property: "og:title", content: "Agenda y Plazos · SIE-CLM" }, { property: "og:description", content: "Visitas, tareas y vencimientos de trámites." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -119,6 +120,7 @@ function AgendaPage() {
 
 function EditorEvento({ ev, onClose }: { ev: Partial<Evento> | null; onClose: () => void }) {
   const qc = useQueryClient();
+  const config = useConfiguracion();
   const { data: centros = [] } = useQuery(centrosQuery);
   const [f, setF] = useState<Partial<Evento>>({});
   const [lastEv, setLastEv] = useState<Partial<Evento> | null>(null);
@@ -130,9 +132,11 @@ function EditorEvento({ ev, onClose }: { ev: Partial<Evento> | null; onClose: ()
 
   async function guardar() {
     if (!f.titulo?.trim() || !f.fecha_inicio) { toast.error("Título y fecha obligatorios"); return; }
+    if (f.tipo_evento === "Visita a Centro" && !f.centro_id) { toast.error("Selecciona el centro de la visita"); return; }
     const payload = {
       titulo: f.titulo, tipo_evento: f.tipo_evento ?? "Visita a Centro", centro_id: f.centro_id ?? null,
       fecha_inicio: new Date(f.fecha_inicio).toISOString(), realizada: !!f.realizada, notas_visita: f.notas_visita ?? null,
+      ...(!f.id ? { inspector_visita: nombreInspector(config), cargo_visita: config.cargo, provincia_visita: config.provincia } : {}),
     };
     const { error } = f.id ? await supabase.from("agenda_eventos").update(payload).eq("id", f.id) : await supabase.from("agenda_eventos").insert(payload);
     if (error) { toast.error(error.message); return; }
@@ -141,7 +145,8 @@ function EditorEvento({ ev, onClose }: { ev: Partial<Evento> | null; onClose: ()
   }
   async function borrar() {
     if (!f.id) return;
-    await supabase.from("agenda_eventos").delete().eq("id", f.id);
+    const { error } = await supabase.from("agenda_eventos").delete().eq("id", f.id);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["eventos"] });
     onClose();
   }
@@ -177,6 +182,7 @@ function EditorEvento({ ev, onClose }: { ev: Partial<Evento> | null; onClose: ()
         </div>
         {!esVencimiento && (
           <DialogFooter className="gap-2">
+            {f.id && f.tipo_evento === "Visita a Centro" && <Button asChild variant="outline"><Link to="/visitas">Registro de visitas</Link></Button>}
             {f.id && <Button variant="ghost" onClick={borrar}>Eliminar</Button>}
             <Button onClick={guardar}>Guardar</Button>
           </DialogFooter>

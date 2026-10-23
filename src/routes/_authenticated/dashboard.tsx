@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { centrosQuery, eventosQuery, tramitesQuery, allChecklistsQuery } from "@/lib/queries";
 import { diasRestantes, semaforo } from "@/lib/plazos";
 import { BIBLIOTECA_URL, BUZON_URL, INSPECTOR } from "@/lib/constants";
+import { useConfiguracion } from "@/lib/configuracion";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard · SIE-CLM" }, { name: "description", content: "Resumen de trámites, visitas y supervisión." }, { property: "og:title", content: "Dashboard · SIE-CLM" }, { property: "og:description", content: "Resumen de trámites, visitas y supervisión." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function Dashboard() {
+  const config = useConfiguracion();
   const { data: tramites = [] } = useQuery(tramitesQuery);
   const { data: centros = [] } = useQuery(centrosQuery);
   const { data: eventos = [] } = useQuery(eventosQuery);
@@ -31,9 +33,9 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow={format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })} title={`Buenos días, ${INSPECTOR.nombre.split(" ").slice(0, 2).join(" ")}`}>
+      <PageHeader eyebrow={format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })} title={`Buenos días, ${config.nombre}`}>
         <Button variant="outline" asChild>
-          <a href={BUZON_URL} target="_blank" rel="noreferrer"><Mail className="h-4 w-4" /> {INSPECTOR.email}</a>
+          <a href={BUZON_URL} target="_blank" rel="noreferrer"><Mail className="h-4 w-4" /> {config.correo_referencia}</a>
         </Button>
         <Button variant="crimson" asChild>
           <Link to="/tramites" search={{ nuevo: true }}><Inbox className="h-4 w-4" /> Nueva entrada</Link>

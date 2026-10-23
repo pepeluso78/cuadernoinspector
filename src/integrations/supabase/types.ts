@@ -16,37 +16,55 @@ export type Database = {
     Tables: {
       agenda_eventos: {
         Row: {
+          cargo_visita: string
           centro_id: string | null
           created_at: string | null
+          descripcion_visita: string
           fecha_fin: string | null
           fecha_inicio: string
           id: string
+          inspector_visita: string
           notas_visita: string | null
+          problemas_visita: string
+          provincia_visita: string
           realizada: boolean | null
+          recomendaciones_visita: string
           tipo_evento: string
           titulo: string
           tramite_id: string | null
         }
         Insert: {
+          cargo_visita?: string
           centro_id?: string | null
           created_at?: string | null
+          descripcion_visita?: string
           fecha_fin?: string | null
           fecha_inicio: string
           id?: string
+          inspector_visita?: string
           notas_visita?: string | null
+          problemas_visita?: string
+          provincia_visita?: string
           realizada?: boolean | null
+          recomendaciones_visita?: string
           tipo_evento: string
           titulo: string
           tramite_id?: string | null
         }
         Update: {
+          cargo_visita?: string
           centro_id?: string | null
           created_at?: string | null
+          descripcion_visita?: string
           fecha_fin?: string | null
           fecha_inicio?: string
           id?: string
+          inspector_visita?: string
           notas_visita?: string | null
+          problemas_visita?: string
+          provincia_visita?: string
           realizada?: boolean | null
+          recomendaciones_visita?: string
           tipo_evento?: string
           titulo?: string
           tramite_id?: string | null
@@ -180,6 +198,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      configuracion_aplicacion: {
+        Row: {
+          apellidos: string
+          cargo: string
+          correo_referencia: string
+          id: number
+          nombre: string
+          provincia: string
+          tema: string
+        }
+        Insert: {
+          apellidos?: string
+          cargo?: string
+          correo_referencia?: string
+          id?: number
+          nombre?: string
+          provincia?: string
+          tema?: string
+        }
+        Update: {
+          apellidos?: string
+          cargo?: string
+          correo_referencia?: string
+          id?: number
+          nombre?: string
+          provincia?: string
+          tema?: string
+        }
+        Relationships: []
       }
       documentos_tramite: {
         Row: {

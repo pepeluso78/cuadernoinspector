@@ -10,6 +10,8 @@
 <!-- LOVABLE:END -->
 
 ## Project rules
+- Application settings are a shared singleton read via the generated authenticated client; credentials stay in Auth, and new visits snapshot configured identity/role/province to preserve historical reports. Theme values map to semantic CSS tokens; email import reads the configured sender through its existing authorized client.
+- Calendar and visit register share agenda_eventos rows (tipo_evento = Visita a Centro), including report fields, so both directions stay consistent without duplicate synchronization writes; PDF reports are generated client-side from the uploaded institutional logo.
 - All app data is read/written from the browser via the generated Supabase client with RLS limited to authenticated users; single-inspector app, so any signed-in account sees all rows.
 - Trámite deadlines are computed client-side in src/lib/plazos.ts (tested); a DB trigger mirrors each trámite's fecha_limite into agenda_eventos so the calendar stays in sync.
 - Protected pages live under src/routes/_authenticated/ which renders the sidebar shell (src/components/app-shell.tsx).
