@@ -10,23 +10,44 @@ export const PLAZOS_POR_TIPO: { label: string; dias: number }[] = [
   { label: "Expediente (30 días lectivos)", dias: 30 },
 ];
 
-// Festivos del curso 2026/2027 que afectan a los plazos (sep 2026 – jun 2027):
-// nacionales, Castilla-La Mancha y locales de Albacete (8 sep y 24 jun).
-const FESTIVOS = new Set([
-  "2026-09-08", // Virgen de los Llanos (Albacete)
-  "2026-10-12", // Fiesta Nacional de España
-  "2026-11-02", // Todos los Santos (trasladado, 1 nov cae en domingo)
-  "2026-12-08", // Inmaculada Concepción
-  "2026-12-25", // Navidad
-  "2027-01-01", // Año Nuevo
-  "2027-01-06", // Reyes
-  "2027-03-25", // Jueves Santo
-  "2027-03-26", // Viernes Santo
-  "2027-03-29", // Lunes de Pascua (CLM)
-  "2027-05-31", // Día de Castilla-La Mancha
-  "2027-06-03", // Corpus Christi (CLM)
-  "2027-06-24", // San Juan (Albacete)
-]);
+// Calendario laboral 2026 y 2027: festivos nacionales, de Castilla-La Mancha
+// y locales de Albacete (8 sep, Virgen de los Llanos; 24 jun, San Juan).
+export const FESTIVOS: Record<string, string> = {
+  // 2026
+  "2026-01-01": "Año Nuevo",
+  "2026-01-06": "Reyes",
+  "2026-04-02": "Jueves Santo",
+  "2026-04-03": "Viernes Santo",
+  "2026-04-06": "Lunes de Pascua",
+  "2026-05-01": "Día del Trabajo",
+  "2026-05-31": "Día de Castilla-La Mancha",
+  "2026-06-04": "Corpus Christi",
+  "2026-06-24": "San Juan (Albacete)",
+  "2026-08-15": "Asunción de la Virgen",
+  "2026-09-08": "Virgen de los Llanos (Albacete)",
+  "2026-10-12": "Fiesta Nacional de España",
+  "2026-11-02": "Todos los Santos",
+  "2026-12-06": "Día de la Constitución",
+  "2026-12-08": "Inmaculada Concepción",
+  "2026-12-25": "Navidad",
+  // 2027
+  "2027-01-01": "Año Nuevo",
+  "2027-01-06": "Reyes",
+  "2027-03-25": "Jueves Santo",
+  "2027-03-26": "Viernes Santo",
+  "2027-03-29": "Lunes de Pascua",
+  "2027-05-01": "Día del Trabajo",
+  "2027-05-31": "Día de Castilla-La Mancha",
+  "2027-06-03": "Corpus Christi",
+  "2027-06-24": "San Juan (Albacete)",
+  "2027-08-15": "Asunción de la Virgen",
+  "2027-09-08": "Virgen de los Llanos (Albacete)",
+  "2027-10-12": "Fiesta Nacional de España",
+  "2027-11-01": "Todos los Santos",
+  "2027-12-06": "Día de la Constitución",
+  "2027-12-08": "Inmaculada Concepción",
+  "2027-12-25": "Navidad",
+};
 
 /** Parse "YYYY-MM-DD" as a local date (no timezone shift). */
 export function parseISODate(s: string): Date {
@@ -45,7 +66,7 @@ export function toISODate(d: Date): string {
 export function esLectivo(d: Date): boolean {
   const dow = d.getDay();
   if (dow === 0 || dow === 6) return false;
-  return !FESTIVOS.has(toISODate(d));
+  return !(toISODate(d) in FESTIVOS);
 }
 
 /** Fecha límite = fecha de entrada + plazo en días lectivos. */
