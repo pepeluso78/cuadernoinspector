@@ -94,8 +94,8 @@ function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="panel p-4">
           <p className="eyebrow">Supervisión</p>
-          <p className="mt-1 text-sm"><span className="font-mono text-2xl font-semibold text-crimson">{subsanar}</span> checklists requieren subsanación</p>
-          <Button variant="link" className="px-0" asChild><Link to="/checklists">Ir a checklists</Link></Button>
+          <p className="mt-1 text-sm"><span className="font-mono text-2xl font-semibold text-crimson">{subsanar}</span> documentos requieren subsanación</p>
+          <Button variant="link" className="px-0" asChild><Link to="/checklists">Ir a documentación</Link></Button>
         </div>
         <a href={BIBLIOTECA_URL} target="_blank" rel="noreferrer" className="panel flex items-center justify-between p-4 hover:bg-accent">
           <div>

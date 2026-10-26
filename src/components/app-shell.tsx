@@ -21,7 +21,7 @@ const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Trámites y Correo", url: "/tramites", icon: Inbox },
   { title: "Mis Centros y Equipos", url: "/centros", icon: School },
-  { title: "Checklists de Supervisión", url: "/checklists", icon: ClipboardCheck },
+  { title: "Documentación de Centros", url: "/checklists", icon: ClipboardCheck },
   { title: "Partes de Ausencias", url: "/partes", icon: UserX },
   { title: "Agenda y Plazos", url: "/agenda", icon: CalendarDays },
   { title: "Registro de Visitas", url: "/visitas", icon: MapPin },
