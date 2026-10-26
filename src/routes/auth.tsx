@@ -97,7 +97,7 @@ function AuthPage() {
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="email">Correo</Label>
-              <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder={INSPECTOR.email} />
+              <Input id="email" type="email" required autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu.correo@ejemplo.es" />
             </div>
             {mode !== "reset" && <div className="space-y-1.5">
               <Label htmlFor="pw">Contraseña</Label>
