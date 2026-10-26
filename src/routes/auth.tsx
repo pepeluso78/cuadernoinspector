@@ -26,7 +26,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"in" | "up">("in");
+  const [mode, setMode] = useState<"in" | "up" | "reset">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -35,7 +35,13 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      if (mode === "in") {
+      if (mode === "reset") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success("Si el correo está registrado, recibirás un enlace para restablecer la contraseña.");
+      } else if (mode === "in") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         navigate({ to: "/dashboard" });
@@ -85,7 +91,7 @@ function AuthPage() {
         <div className="w-full max-w-sm space-y-6">
           <div>
             <ShieldCheck className="h-8 w-8 text-crimson" />
-            <h2 className="mt-3 text-2xl font-semibold">{mode === "in" ? "Iniciar sesión" : "Crear cuenta"}</h2>
+            <h2 className="mt-3 text-2xl font-semibold">{mode === "reset" ? "Restablecer contraseña" : mode === "in" ? "Iniciar sesión" : "Crear cuenta"}</h2>
             <p className="text-sm text-muted-foreground">SIE-CLM · {INSPECTOR.nombre}</p>
           </div>
           <form onSubmit={submit} className="space-y-4">
@@ -93,23 +99,24 @@ function AuthPage() {
               <Label htmlFor="email">Correo</Label>
               <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder={INSPECTOR.email} />
             </div>
-            <div className="space-y-1.5">
+            {mode !== "reset" && <div className="space-y-1.5">
               <Label htmlFor="pw">Contraseña</Label>
               <Input id="pw" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
-            </div>
+            </div>}
             <Button type="submit" className="w-full" disabled={busy}>
-              {mode === "in" ? "Entrar" : "Registrarse"}
+              {busy ? "Enviando…" : mode === "reset" ? "Enviar enlace" : mode === "in" ? "Entrar" : "Registrarse"}
             </Button>
           </form>
+          {mode === "in" && <Button variant="link" className="px-0" onClick={() => setMode("reset")}>¿Has olvidado la contraseña?</Button>}
           <div className="space-y-2">
             <Button variant="outline" className="w-full" onClick={() => oauth("google")}>Continuar con Google</Button>
             <button type="button" className="lovable-auth-button w-full" onClick={() => oauth("lovable")}>
               Continue with Lovable
             </button>
           </div>
-          <button type="button" className="text-sm text-muted-foreground underline" onClick={() => setMode(mode === "in" ? "up" : "in")}>
+          <Button variant="link" className="px-0 text-muted-foreground" onClick={() => setMode(mode === "in" ? "up" : "in")}>
             {mode === "in" ? "¿Primera vez? Crear cuenta" : "Ya tengo cuenta"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
