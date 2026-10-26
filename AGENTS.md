@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Project rules
+- Quick document submission updates only its status and identity keys; synchronize the open centre form without replacing unsaved observations.
 - Trámite lists load the complete archive in ordered pages and use independent normalized searches for pending and closed records, so older records remain searchable beyond Data API row limits.
 - Password recovery uses the public /reset-password route and Cloud Auth recovery sessions; never expose passwords or bypass email ownership verification.
 - Application settings are per-user rows in configuracion_aplicacion keyed by user_id (RLS: auth.uid() = user_id); new users start with blank identity/correo_referencia and fill them in Configuración. Credentials stay in Auth, and new visits snapshot configured identity/role/province to preserve historical reports. Theme values map to semantic CSS tokens; email import reads the configured sender through its existing authorized client.

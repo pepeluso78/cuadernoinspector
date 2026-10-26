@@ -1,5 +1,5 @@
 # Tareas abiertas
-- [ ] Marcar documentos como presentados directamente desde el listado de centros, conservando sus observaciones.
+- [x] Marcar documentos como presentados directamente desde el listado de centros, conservando sus observaciones.
 - [ ] Comprobar un adjunto real reenviado desde JCCM: pendiente de recibir un correo que cumpla el filtro.
 
 # Hecho (26 oct 2026)
