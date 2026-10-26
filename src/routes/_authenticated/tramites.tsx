@@ -259,6 +259,24 @@ function DetalleTramite({ tramite, onClose }: { tramite: Tramite | null; onClose
     qc.invalidateQueries({ queryKey: ["eventos"] });
     onClose();
   }
+  async function finalizar() {
+    if (!d) return;
+    const { error } = await supabase.from("tramites").update({ estado: "Finalizado" }).eq("id", d.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Trámite finalizado");
+    setD({ ...d, estado: "Finalizado" });
+    qc.invalidateQueries({ queryKey: ["tramites"] });
+    qc.invalidateQueries({ queryKey: ["eventos"] });
+  }
+  async function reabrir() {
+    if (!d) return;
+    const { error } = await supabase.from("tramites").update({ estado: "Pendiente" }).eq("id", d.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Trámite reabierto");
+    setD({ ...d, estado: "Pendiente" });
+    qc.invalidateQueries({ queryKey: ["tramites"] });
+    qc.invalidateQueries({ queryKey: ["eventos"] });
+  }
   const normasF = normas.filter((n) => n.titulo_norma.toLowerCase().includes(qn.toLowerCase())).slice(0, 6);
 
   return (
@@ -267,7 +285,7 @@ function DetalleTramite({ tramite, onClose }: { tramite: Tramite | null; onClose
         <SheetHeader>
           <p className="eyebrow">{d.origen} · {d.numero_registro}</p>
           <SheetTitle className="font-serif text-2xl text-primary">{d.asunto}</SheetTitle>
-          {d.fecha_limite && <div><CuentaAtras fechaLimite={d.fecha_limite} cerrado={d.estado === "Respondido / Elevado"} /></div>}
+          {d.fecha_limite && <div><CuentaAtras fechaLimite={d.fecha_limite} cerrado={esTramiteCerrado(d.estado)} /></div>}
         </SheetHeader>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <Campo label="Estado">
@@ -312,9 +330,14 @@ function DetalleTramite({ tramite, onClose }: { tramite: Tramite | null; onClose
             </ul>
           </div>
         </div>
-        <div className="mt-6 flex justify-between">
+        <div className="mt-6 flex flex-wrap justify-between gap-2">
           <Button variant="ghost" onClick={borrar}><Trash2 className="h-4 w-4" /> Eliminar</Button>
-          <Button onClick={guardar}>Guardar cambios</Button>
+          <div className="flex flex-wrap gap-2">
+            {d.estado === "Finalizado"
+              ? <Button variant="outline" onClick={reabrir}><RotateCcw className="h-4 w-4" /> Reabrir trámite</Button>
+              : <Button variant="crimson" onClick={finalizar}><CheckCircle2 className="h-4 w-4" /> Finalizar trámite</Button>}
+            <Button onClick={guardar}>Guardar cambios</Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
