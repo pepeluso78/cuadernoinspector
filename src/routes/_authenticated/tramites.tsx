@@ -20,6 +20,7 @@ import { centrosQuery, normativaQuery, tramitesQuery, type Tramite } from "@/lib
 import { calcularFechaLimite, PLAZOS_POR_TIPO, toISODate, PLAZO_GENERAL } from "@/lib/plazos";
 import { BUZON_URL, ESTADOS_TRAMITE, esTramiteCerrado, ORIGENES, TIPOS_ACTUACION } from "@/lib/constants";
 import { useConfiguracion, nombreInspector } from "@/lib/configuracion";
+import { buscarTramites } from "@/lib/tramites-busqueda";
 
 export const Route = createFileRoute("/_authenticated/tramites")({
   validateSearch: (s: Record<string, unknown>): { nuevo?: boolean } => (s["nuevo"] === true || s["nuevo"] === "true" ? { nuevo: true } : {}),
@@ -35,7 +36,8 @@ function TramitesPage() {
   const navigate = useNavigate();
   const { data: tramites = [] } = useQuery(tramitesQuery);
   const { data: centros = [] } = useQuery(centrosQuery);
-  const [q, setQ] = useState("");
+  const [qPendientes, setQPendientes] = useState("");
+  const [qRealizados, setQRealizados] = useState("");
   const [open, setOpen] = useState(false);
   const [sel, setSel] = useState<Tramite | null>(null);
   const qc = useQueryClient();
@@ -64,9 +66,8 @@ function TramitesPage() {
     }
   }, [nuevo, navigate]);
 
-  const coincide = (t: Tramite) => `${t.asunto} ${t.numero_registro} ${t.remitente}`.toLowerCase().includes(q.toLowerCase());
-  const pendientes = useMemo(() => tramites.filter((t) => !esTramiteCerrado(t.estado) && coincide(t)), [tramites, q]);
-  const realizados = useMemo(() => tramites.filter((t) => esTramiteCerrado(t.estado) && coincide(t)), [tramites, q]);
+  const pendientes = useMemo(() => buscarTramites(tramites, centros, qPendientes, false), [tramites, centros, qPendientes]);
+  const realizados = useMemo(() => buscarTramites(tramites, centros, qRealizados, true), [tramites, centros, qRealizados]);
   const nombreCentro = (id: string | null) => centros.find((c) => c.id === id)?.nombre ?? "—";
 
   return (
@@ -79,18 +80,22 @@ function TramitesPage() {
         <Button variant="crimson" onClick={() => setOpen(true)}><Plus className="h-4 w-4" /> Nueva Entrada / Nota Interior</Button>
       </PageHeader>
 
+      <h2 className="eyebrow mb-2">Trámites pendientes ({pendientes.length})</h2>
       <div className="mb-4 flex flex-wrap gap-2">
         <div className="relative min-w-60 flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input className="pl-8" placeholder="Buscar por asunto, registro o remitente" value={q} onChange={(e) => setQ(e.target.value)} />
+          <Input type="search" aria-label="Buscar trámites pendientes" className="pl-8" placeholder="Buscar pendientes por asunto, registro, remitente o centro" value={qPendientes} onChange={(e) => setQPendientes(e.target.value)} />
         </div>
       </div>
 
-      <h2 className="eyebrow mb-2">Trámites pendientes ({pendientes.length})</h2>
-      <TablaTramites lista={pendientes} nombreCentro={nombreCentro} onSelect={setSel} vacio="No hay trámites pendientes." />
+      <TablaTramites lista={pendientes} nombreCentro={nombreCentro} onSelect={setSel} vacio={qPendientes.trim() ? "No hay trámites pendientes que coincidan con la búsqueda." : "No hay trámites pendientes."} />
 
       <h2 className="eyebrow mb-2 mt-8">Trámites realizados ({realizados.length})</h2>
-      <TablaTramites lista={realizados} nombreCentro={nombreCentro} onSelect={setSel} vacio="Todavía no hay trámites realizados." realizados />
+      <div className="relative mb-4">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input type="search" aria-label="Buscar trámites finalizados" className="pl-8" placeholder="Buscar finalizados por asunto, registro, remitente, centro o año" value={qRealizados} onChange={(e) => setQRealizados(e.target.value)} />
+      </div>
+      <TablaTramites lista={realizados} nombreCentro={nombreCentro} onSelect={setSel} vacio={qRealizados.trim() ? "No hay trámites realizados que coincidan con la búsqueda." : "Todavía no hay trámites realizados."} realizados />
 
       <NuevoTramite open={open} onOpenChange={setOpen} />
       <DetalleTramite tramite={sel} onClose={() => setSel(null)} />

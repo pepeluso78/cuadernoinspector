@@ -25,7 +25,15 @@ export const centroQuery = (id: string) =>
   });
 export const tramitesQuery = queryOptions({
   queryKey: ["tramites"],
-  queryFn: async () => ok(await supabase.from("tramites").select("*").order("fecha_limite")),
+  queryFn: async () => {
+    const tramites: Tramite[] = [];
+    const pagina = 500;
+    for (let desde = 0; ; desde += pagina) {
+      const filas = ok(await supabase.from("tramites").select("*").order("fecha_limite").order("id").range(desde, desde + pagina - 1));
+      tramites.push(...filas);
+      if (filas.length < pagina) return tramites;
+    }
+  },
 });
 export const notasQuery = (centroId: string) =>
   queryOptions({

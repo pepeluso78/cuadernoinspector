@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Copy, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ import { allChecklistsQuery, centrosQuery } from "@/lib/queries";
 import { CATEGORIAS, ETIQUETA_CATEGORIA, generarRequerimiento, type Categoria, type ItemChecklist } from "@/lib/checklists";
 import { cn } from "@/lib/utils";
 import { useConfiguracion } from "@/lib/configuracion";
+import { documentoPresentado } from "@/lib/documentacion-estado";
 
 export const Route = createFileRoute("/_authenticated/checklists")({
   validateSearch: (s: Record<string, unknown>): { centro?: string } => (typeof s["centro"] === "string" ? { centro: s["centro"] } : {}),
@@ -42,6 +43,9 @@ const botonEstado: Record<EstadoDoc, string> = {
 };
 
 function ChecklistsPage() {
+  const qc = useQueryClient();
+  const [guardando, setGuardando] = useState<string | null>(null);
+  const [presentado, setPresentado] = useState<{ centroId: string; doc: Categoria; revision: number } | null>(null);
   const { centro } = Route.useSearch();
   const navigate = useNavigate();
   const { data: centros = [] } = useQuery(centrosQuery);
@@ -50,6 +54,20 @@ function ChecklistsPage() {
 
   const estadoDe = (centroIdQ: string, doc: Categoria): EstadoDoc =>
     aEstadoDoc(registros.find((r) => r.centro_id === centroIdQ && r.curso_escolar === CURSO && r.categoria === doc)?.estado_global);
+
+  async function marcarPresentado(centroId: string, doc: Categoria) {
+    if (guardando) return;
+    setGuardando(`${centroId}:${doc}`);
+    try {
+      const { error } = await supabase.from("checklists_centro").upsert(documentoPresentado(centroId, CURSO, doc), { onConflict: "centro_id,curso_escolar,categoria" });
+      if (error) throw error;
+      setPresentado({ centroId, doc, revision: Date.now() });
+      await qc.invalidateQueries({ queryKey: ["checklists"] });
+      toast.success(`${ETIQUETA_CATEGORIA[doc]} presentado`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "No se pudo marcar el documento como presentado");
+    } finally { setGuardando(null); }
+  }
 
   return (
     <div>
@@ -74,10 +92,10 @@ function ChecklistsPage() {
                   const e = estadoDe(c.id, doc);
                   return (
                     <td key={doc} className="text-center">
-                      <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold", e === "Presentado" ? "bg-ok-soft text-ok" : e === "Subsanar" ? "bg-late-soft text-late" : "bg-muted text-muted-foreground")}>
+                      <Button variant="ghost" size="sm" aria-label={`${ETIQUETA_CATEGORIA[doc]} de ${c.nombre}: ${e}`} title={e === "Presentado" ? "Documento presentado" : "Marcar como presentado"} disabled={guardando !== null} onClick={(event) => { event.stopPropagation(); if (e !== "Presentado") void marcarPresentado(c.id, doc); }} className={cn("h-7 gap-1.5 px-2 py-0.5 text-[11px] font-semibold", e === "Presentado" ? "bg-ok-soft text-ok hover:bg-ok-soft hover:text-ok" : e === "Subsanar" ? "bg-late-soft text-late" : "bg-muted text-muted-foreground")}>
                         <span className={cn("h-2 w-2 rounded-full", puntoEstado[e])} />
                         {e}
-                      </span>
+                      </Button>
                     </td>
                   );
                 })}
@@ -88,14 +106,14 @@ function ChecklistsPage() {
         </table>
       </div>
 
-      {centroId && <FichaCentro key={centroId} centroId={centroId} />}
+      {centroId && <FichaCentro key={centroId} centroId={centroId} presentado={presentado} />}
     </div>
   );
 }
 
 type DocFicha = { estado: EstadoDoc; obs: string };
 
-function FichaCentro({ centroId }: { centroId: string }) {
+function FichaCentro({ centroId, presentado }: { centroId: string; presentado: { centroId: string; doc: Categoria; revision: number } | null }) {
   const config = useConfiguracion();
   const qc = useQueryClient();
   const { data: centros = [] } = useQuery(centrosQuery);
@@ -111,8 +129,30 @@ function FichaCentro({ centroId }: { centroId: string }) {
     return ini;
   });
   const [texto, setTexto] = useState("");
+  const editados = useRef(new Set<Categoria>());
 
-  const upd = (cat: Categoria, p: Partial<DocFicha>) => setDocs((prev) => ({ ...prev, [cat]: { ...prev[cat], ...p } }));
+  useEffect(() => {
+    setDocs((prev) => {
+      const siguiente = { ...prev };
+      for (const cat of CATEGORIAS) {
+        if (editados.current.has(cat)) continue;
+        const reg = registros.find((r) => r.centro_id === centroId && r.curso_escolar === CURSO && r.categoria === cat);
+        siguiente[cat] = { estado: aEstadoDoc(reg?.estado_global), obs: reg?.observaciones_inspector ?? "" };
+      }
+      return siguiente;
+    });
+  }, [registros, centroId]);
+
+  useEffect(() => {
+    if (presentado?.centroId !== centroId) return;
+    const cat = presentado.doc;
+    setDocs((prev) => ({ ...prev, [cat]: { ...prev[cat], estado: "Presentado" } }));
+  }, [presentado, centroId]);
+
+  const upd = (cat: Categoria, p: Partial<DocFicha>) => {
+    editados.current.add(cat);
+    setDocs((prev) => ({ ...prev, [cat]: { ...prev[cat], ...p } }));
+  };
   const presentados = CATEGORIAS.filter((c) => docs[c].estado === "Presentado").length;
 
   async function guardar() {
@@ -127,6 +167,7 @@ function FichaCentro({ centroId }: { centroId: string }) {
     }));
     const { error } = await supabase.from("checklists_centro").upsert(filas, { onConflict: "centro_id,curso_escolar,categoria" });
     if (error) { toast.error(error.message); return; }
+    editados.current.clear();
     qc.invalidateQueries({ queryKey: ["checklists"] });
     toast.success("Ficha guardada");
   }
