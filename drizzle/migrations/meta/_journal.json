@@ -64,6 +64,13 @@
       "when": 1792775267088,
       "tag": "0008_configuracion_por_usuario",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793007621067,
+      "tag": "0009_config_por_usuario_ids",
+      "breakpoints": true
     }
   ]
 }

@@ -30,7 +30,7 @@ function ConfiguracionPage() {
   e.preventDefault(); const parsed = configuracionSchema.safeParse(f);
   if (!parsed.success) { toast.error("Revisa los datos personales y el correo de referencia"); return; }
   setBusy(true);
-  const { error } = await supabase.from("configuracion_aplicacion").upsert(parsed.data);
+  const { error } = await supabase.from("configuracion_aplicacion").upsert(parsed.data, { onConflict: "user_id" });
   setBusy(false);
   if (error) { toast.error(error.message); return; }
   qc.setQueryData(configuracionQuery.queryKey, parsed.data);
