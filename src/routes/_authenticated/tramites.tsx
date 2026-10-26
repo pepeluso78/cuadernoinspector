@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Mail, Plus, Search, Trash2, BookOpen, Copy, Inbox } from "lucide-react";
+import { Mail, Plus, Search, Trash2, BookOpen, Copy, Inbox, CheckCircle2, RotateCcw } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { importarCorreosFn } from "@/lib/correo.functions";
 import { DocumentosTramite } from "@/components/documentos-tramite";
@@ -18,7 +18,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { centrosQuery, normativaQuery, tramitesQuery, type Tramite } from "@/lib/queries";
 import { calcularFechaLimite, PLAZOS_POR_TIPO, toISODate, PLAZO_GENERAL } from "@/lib/plazos";
-import { BUZON_URL, ESTADOS_TRAMITE, INSPECTOR, ORIGENES, TIPOS_ACTUACION } from "@/lib/constants";
+import { BUZON_URL, ESTADOS_TRAMITE, esTramiteCerrado, ORIGENES, TIPOS_ACTUACION } from "@/lib/constants";
 import { useConfiguracion, nombreInspector } from "@/lib/configuracion";
 
 export const Route = createFileRoute("/_authenticated/tramites")({
