@@ -8,7 +8,7 @@ import { CuentaAtras } from "@/components/semaforo";
 import { Button } from "@/components/ui/button";
 import { centrosQuery, eventosQuery, tramitesQuery, allChecklistsQuery } from "@/lib/queries";
 import { diasRestantes, semaforo } from "@/lib/plazos";
-import { BIBLIOTECA_URL, BUZON_URL, INSPECTOR } from "@/lib/constants";
+import { BIBLIOTECA_URL, BUZON_URL, esTramiteCerrado, INSPECTOR } from "@/lib/constants";
 import { useConfiguracion } from "@/lib/configuracion";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -23,12 +23,12 @@ function Dashboard() {
   const { data: eventos = [] } = useQuery(eventosQuery);
   const { data: checks = [] } = useQuery(allChecklistsQuery);
 
-  const abiertos = tramites.filter((t) => t.estado !== "Respondido / Elevado");
+  const abiertos = tramites.filter((t) => !esTramiteCerrado(t.estado));
   const cuenta = { verde: 0, amarillo: 0, rojo: 0 };
   abiertos.forEach((t) => t.fecha_limite && cuenta[semaforo(diasRestantes(t.fecha_limite))]++);
   const ahora = Date.now();
   const proximos = eventos.filter((e) => new Date(e.fecha_inicio).getTime() >= ahora - 86400000 && !e.realizada).slice(0, 6);
-  const subsanar = checks.filter((c) => c.estado_global === "Requiere subsanación").length;
+  const subsanar = checks.filter((c) => c.estado_global === "Requiere subsanación" || c.estado_global === "Subsanar").length;
   const nombreCentro = (id: string | null) => centros.find((c) => c.id === id)?.nombre ?? "—";
 
   return (
@@ -94,8 +94,8 @@ function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="panel p-4">
           <p className="eyebrow">Supervisión</p>
-          <p className="mt-1 text-sm"><span className="font-mono text-2xl font-semibold text-crimson">{subsanar}</span> checklists requieren subsanación</p>
-          <Button variant="link" className="px-0" asChild><Link to="/checklists">Ir a checklists</Link></Button>
+          <p className="mt-1 text-sm"><span className="font-mono text-2xl font-semibold text-crimson">{subsanar}</span> documentos requieren subsanación</p>
+          <Button variant="link" className="px-0" asChild><Link to="/checklists">Ir a documentación</Link></Button>
         </div>
         <a href={BIBLIOTECA_URL} target="_blank" rel="noreferrer" className="panel flex items-center justify-between p-4 hover:bg-accent">
           <div>

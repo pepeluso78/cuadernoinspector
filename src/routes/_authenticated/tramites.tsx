@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Mail, Plus, Search, Trash2, BookOpen, Copy, Inbox } from "lucide-react";
+import { Mail, Plus, Search, Trash2, BookOpen, Copy, Inbox, CheckCircle2, RotateCcw } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { importarCorreosFn } from "@/lib/correo.functions";
 import { DocumentosTramite } from "@/components/documentos-tramite";
@@ -18,7 +18,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { centrosQuery, normativaQuery, tramitesQuery, type Tramite } from "@/lib/queries";
 import { calcularFechaLimite, PLAZOS_POR_TIPO, toISODate, PLAZO_GENERAL } from "@/lib/plazos";
-import { BUZON_URL, ESTADOS_TRAMITE, INSPECTOR, ORIGENES, TIPOS_ACTUACION } from "@/lib/constants";
+import { BUZON_URL, ESTADOS_TRAMITE, esTramiteCerrado, ORIGENES, TIPOS_ACTUACION } from "@/lib/constants";
 import { useConfiguracion, nombreInspector } from "@/lib/configuracion";
 
 export const Route = createFileRoute("/_authenticated/tramites")({
@@ -36,7 +36,6 @@ function TramitesPage() {
   const { data: tramites = [] } = useQuery(tramitesQuery);
   const { data: centros = [] } = useQuery(centrosQuery);
   const [q, setQ] = useState("");
-  const [filtro, setFiltro] = useState("abiertos");
   const [open, setOpen] = useState(false);
   const [sel, setSel] = useState<Tramite | null>(null);
   const qc = useQueryClient();
@@ -65,13 +64,9 @@ function TramitesPage() {
     }
   }, [nuevo, navigate]);
 
-  const lista = useMemo(
-    () =>
-      tramites
-        .filter((t) => (filtro === "abiertos" ? t.estado !== "Respondido / Elevado" : filtro === "cerrados" ? t.estado === "Respondido / Elevado" : true))
-        .filter((t) => `${t.asunto} ${t.numero_registro} ${t.remitente}`.toLowerCase().includes(q.toLowerCase())),
-    [tramites, q, filtro],
-  );
+  const coincide = (t: Tramite) => `${t.asunto} ${t.numero_registro} ${t.remitente}`.toLowerCase().includes(q.toLowerCase());
+  const pendientes = useMemo(() => tramites.filter((t) => !esTramiteCerrado(t.estado) && coincide(t)), [tramites, q]);
+  const realizados = useMemo(() => tramites.filter((t) => esTramiteCerrado(t.estado) && coincide(t)), [tramites, q]);
   const nombreCentro = (id: string | null) => centros.find((c) => c.id === id)?.nombre ?? "—";
 
   return (
@@ -89,43 +84,45 @@ function TramitesPage() {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input className="pl-8" placeholder="Buscar por asunto, registro o remitente" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
-        <Select value={filtro} onValueChange={setFiltro}>
-          <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="abiertos">Abiertos</SelectItem>
-            <SelectItem value="cerrados">Respondidos</SelectItem>
-            <SelectItem value="todos">Todos</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
-      <div className="panel overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="border-b bg-muted/60 text-left">
-            <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:eyebrow">
-              <th>Registro</th><th>Asunto</th><th>Origen</th><th>Centro</th><th>Entrada</th><th>Límite</th><th>Plazo</th><th>Estado</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {lista.map((t) => (
-              <tr key={t.id} className="cursor-pointer hover:bg-accent/50 [&>td]:px-3 [&>td]:py-2.5" onClick={() => setSel(t)}>
-                <td className="font-mono text-xs">{t.numero_registro || "—"}</td>
-                <td className="font-medium">{t.asunto}</td>
-                <td className="text-muted-foreground">{t.origen}</td>
-                <td className="text-muted-foreground">{nombreCentro(t.centro_id)}</td>
-                <td className="font-mono text-xs">{t.fecha_entrada}</td>
-                <td className="font-mono text-xs">{t.fecha_limite}</td>
-                <td>{t.fecha_limite && <CuentaAtras fechaLimite={t.fecha_limite} cerrado={t.estado === "Respondido / Elevado"} />}</td>
-                <td className="text-xs">{t.estado}</td>
-              </tr>
-            ))}
-            {!lista.length && <tr><td colSpan={8} className="py-10 text-center text-muted-foreground">No hay trámites.</td></tr>}
-          </tbody>
-        </table>
-      </div>
+      <h2 className="eyebrow mb-2">Trámites pendientes ({pendientes.length})</h2>
+      <TablaTramites lista={pendientes} nombreCentro={nombreCentro} onSelect={setSel} vacio="No hay trámites pendientes." />
+
+      <h2 className="eyebrow mb-2 mt-8">Trámites realizados ({realizados.length})</h2>
+      <TablaTramites lista={realizados} nombreCentro={nombreCentro} onSelect={setSel} vacio="Todavía no hay trámites realizados." realizados />
 
       <NuevoTramite open={open} onOpenChange={setOpen} />
       <DetalleTramite tramite={sel} onClose={() => setSel(null)} />
+    </div>
+  );
+}
+
+function TablaTramites({ lista, nombreCentro, onSelect, vacio, realizados }: { lista: Tramite[]; nombreCentro: (id: string | null) => string; onSelect: (t: Tramite) => void; vacio: string; realizados?: boolean }) {
+  return (
+    <div className="panel overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead className="border-b bg-muted/60 text-left">
+          <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:eyebrow">
+            <th>Registro</th><th>Asunto</th><th>Origen</th><th>Centro</th><th>Entrada</th><th>Límite</th><th>Plazo</th><th>Estado</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {lista.map((t) => (
+            <tr key={t.id} className={`cursor-pointer hover:bg-accent/50 [&>td]:px-3 [&>td]:py-2.5 ${realizados ? "bg-ok-soft/40" : ""}`} onClick={() => onSelect(t)}>
+              <td className="font-mono text-xs">{t.numero_registro || "—"}</td>
+              <td className="font-medium">{t.asunto}</td>
+              <td className="text-muted-foreground">{t.origen}</td>
+              <td className="text-muted-foreground">{nombreCentro(t.centro_id)}</td>
+              <td className="font-mono text-xs">{t.fecha_entrada}</td>
+              <td className="font-mono text-xs">{t.fecha_limite}</td>
+              <td>{t.fecha_limite && <CuentaAtras fechaLimite={t.fecha_limite} cerrado={esTramiteCerrado(t.estado)} />}</td>
+              <td className="text-xs">{t.estado === "Finalizado" ? <span className="inline-flex items-center gap-1 rounded border border-ok/30 bg-ok-soft px-2 py-0.5 font-semibold text-ok"><CheckCircle2 className="h-3 w-3" /> Finalizado</span> : t.estado}</td>
+            </tr>
+          ))}
+          {!lista.length && <tr><td colSpan={8} className="py-10 text-center text-muted-foreground">{vacio}</td></tr>}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -262,6 +259,24 @@ function DetalleTramite({ tramite, onClose }: { tramite: Tramite | null; onClose
     qc.invalidateQueries({ queryKey: ["eventos"] });
     onClose();
   }
+  async function finalizar() {
+    if (!d) return;
+    const { error } = await supabase.from("tramites").update({ estado: "Finalizado" }).eq("id", d.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Trámite finalizado");
+    setD({ ...d, estado: "Finalizado" });
+    qc.invalidateQueries({ queryKey: ["tramites"] });
+    qc.invalidateQueries({ queryKey: ["eventos"] });
+  }
+  async function reabrir() {
+    if (!d) return;
+    const { error } = await supabase.from("tramites").update({ estado: "Pendiente" }).eq("id", d.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Trámite reabierto");
+    setD({ ...d, estado: "Pendiente" });
+    qc.invalidateQueries({ queryKey: ["tramites"] });
+    qc.invalidateQueries({ queryKey: ["eventos"] });
+  }
   const normasF = normas.filter((n) => n.titulo_norma.toLowerCase().includes(qn.toLowerCase())).slice(0, 6);
 
   return (
@@ -270,7 +285,7 @@ function DetalleTramite({ tramite, onClose }: { tramite: Tramite | null; onClose
         <SheetHeader>
           <p className="eyebrow">{d.origen} · {d.numero_registro}</p>
           <SheetTitle className="font-serif text-2xl text-primary">{d.asunto}</SheetTitle>
-          {d.fecha_limite && <div><CuentaAtras fechaLimite={d.fecha_limite} cerrado={d.estado === "Respondido / Elevado"} /></div>}
+          {d.fecha_limite && <div><CuentaAtras fechaLimite={d.fecha_limite} cerrado={esTramiteCerrado(d.estado)} /></div>}
         </SheetHeader>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <Campo label="Estado">
@@ -315,9 +330,14 @@ function DetalleTramite({ tramite, onClose }: { tramite: Tramite | null; onClose
             </ul>
           </div>
         </div>
-        <div className="mt-6 flex justify-between">
+        <div className="mt-6 flex flex-wrap justify-between gap-2">
           <Button variant="ghost" onClick={borrar}><Trash2 className="h-4 w-4" /> Eliminar</Button>
-          <Button onClick={guardar}>Guardar cambios</Button>
+          <div className="flex flex-wrap gap-2">
+            {d.estado === "Finalizado"
+              ? <Button variant="outline" onClick={reabrir}><RotateCcw className="h-4 w-4" /> Reabrir trámite</Button>
+              : <Button variant="crimson" onClick={finalizar}><CheckCircle2 className="h-4 w-4" /> Finalizar trámite</Button>}
+            <Button onClick={guardar}>Guardar cambios</Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
