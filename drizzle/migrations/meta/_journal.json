@@ -71,6 +71,13 @@
       "when": 1793007621067,
       "tag": "0009_config_por_usuario_ids",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793016261656,
+      "tag": "0010_vencimiento_tramite_finalizado",
+      "breakpoints": true
     }
   ]
 }

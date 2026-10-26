@@ -1,17 +1,7 @@
-# Documentos de trámites
-- [x] Añadir configuración personal (nombre, apellidos, cargo y servicio provincial), acceso (correo de usuario y contraseña), remitente para trámites y temas.
-- [x] Aplicar configuración a identificación, reseñas e importación; probar guardado y apariencia sin cambiar credenciales reales (cambio efectivo de credenciales no probado para preservar la cuenta).
-- [x] Crear registro de visitas conectado a la agenda con reseña y PDF con logotipo del modelo.
-- [x] Verificar creación desde ambas pantallas, persistencia de la reseña y PDF.
-- [x] Guardar adjuntos del correo en almacenamiento privado, sin duplicarlos y con reintento.
-- [x] Subir, consultar, descargar y eliminar documentos del trámite.
-- [x] Probar procesamiento de adjuntos y carga/descarga/persistencia/eliminación con sesión iniciada (14 pruebas correctas).
-- [ ] Comprobar un adjunto real reenviado desde JCCM: pendiente de recibir un correo que cumpla el filtro; la importación actual no encuentra correos nuevos.
-- [x] Sustituir Decreto 34/2008 por Decreto 45/2026 (y Orden 2008/RD 2193/1995 derogados) en normativa.
-- [x] Botón de informe PDF por centro en Partes de Ausencias.
-- [x] Apuntar el botón del buzón a https://mail.google.com/mail/u/0/#inbox.
-- [x] Limpiar fechas de presentación de prueba en Partes de Ausencias (CC Aristos y CEIP Anton Diaz).
-- [x] Añadir Actividades de Formación y Tareas de Coordinación a los eventos.
-- [x] Módulo Guardias con formulario y Reporte de Guardia en PDF.
-- [x] Mostrar las guardias en el calendario.
-- [x] Imprimir PDF del mes o semana visible con todos sus eventos y guardias, o de los eventos pendientes desde hoy inclusive; descarga verificada con sesión iniciada y evento temporal retirado.
+# Tareas abiertas
+- [ ] Trámites: botón "Finalizar trámite", color distinto en tramitador y calendario, secciones "Trámites pendientes" (arriba) y "Trámites realizados" (abajo, con búsqueda).
+- [ ] Checklists: sustituir supervisión por control de documentación presentada por centro (5 documentos), con ficha por centro y observaciones por documento.
+- [ ] Comprobar un adjunto real reenviado desde JCCM: pendiente de recibir un correo que cumpla el filtro.
+
+# Hecho (histórico)
+- Configuración personal, registro de visitas con reseña y PDF, adjuntos de correo, partes de ausencias, festivos 2026/2027, guardias con PDF, impresión de agenda, configuración por usuario, recuperación de contraseña.
