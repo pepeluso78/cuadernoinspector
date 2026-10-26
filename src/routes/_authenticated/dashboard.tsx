@@ -28,7 +28,7 @@ function Dashboard() {
   abiertos.forEach((t) => t.fecha_limite && cuenta[semaforo(diasRestantes(t.fecha_limite))]++);
   const ahora = Date.now();
   const proximos = eventos.filter((e) => new Date(e.fecha_inicio).getTime() >= ahora - 86400000 && !e.realizada).slice(0, 6);
-  const subsanar = checks.filter((c) => c.estado_global === "Requiere subsanación").length;
+  const subsanar = checks.filter((c) => c.estado_global === "Requiere subsanación" || c.estado_global === "Subsanar").length;
   const nombreCentro = (id: string | null) => centros.find((c) => c.id === id)?.nombre ?? "—";
 
   return (
