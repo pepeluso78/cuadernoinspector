@@ -92,7 +92,7 @@ function AuthPage() {
           <div>
             <ShieldCheck className="h-8 w-8 text-crimson" />
             <h2 className="mt-3 text-2xl font-semibold">{mode === "reset" ? "Restablecer contraseña" : mode === "in" ? "Iniciar sesión" : "Crear cuenta"}</h2>
-            <p className="text-sm text-muted-foreground">SIE-CLM · {INSPECTOR.nombre}</p>
+            <p className="text-sm text-muted-foreground">SIE-CLM · Inspección de Educación</p>
           </div>
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-1.5">
