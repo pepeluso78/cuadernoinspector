@@ -8,7 +8,7 @@ import { CuentaAtras } from "@/components/semaforo";
 import { Button } from "@/components/ui/button";
 import { centrosQuery, eventosQuery, tramitesQuery, allChecklistsQuery } from "@/lib/queries";
 import { diasRestantes, semaforo } from "@/lib/plazos";
-import { BIBLIOTECA_URL, BUZON_URL, INSPECTOR } from "@/lib/constants";
+import { BIBLIOTECA_URL, BUZON_URL, esTramiteCerrado, INSPECTOR } from "@/lib/constants";
 import { useConfiguracion } from "@/lib/configuracion";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -23,7 +23,7 @@ function Dashboard() {
   const { data: eventos = [] } = useQuery(eventosQuery);
   const { data: checks = [] } = useQuery(allChecklistsQuery);
 
-  const abiertos = tramites.filter((t) => t.estado !== "Respondido / Elevado");
+  const abiertos = tramites.filter((t) => !esTramiteCerrado(t.estado));
   const cuenta = { verde: 0, amarillo: 0, rojo: 0 };
   abiertos.forEach((t) => t.fecha_limite && cuenta[semaforo(diasRestantes(t.fecha_limite))]++);
   const ahora = Date.now();

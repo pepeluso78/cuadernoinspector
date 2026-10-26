@@ -95,6 +95,7 @@ function AgendaPage() {
         )}
         <div className="ml-auto flex flex-wrap gap-3 text-xs">
           {TIPOS_EVENTO.map((t) => <span key={t} className="flex items-center gap-1"><span className={cn("h-2.5 w-2.5 rounded-sm", color[t])} />{t}</span>)}
+          <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-ok-soft ring-1 ring-ok/40" />Trámite finalizado</span>
           <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-crimson/15 ring-1 ring-crimson/30" />Guardia</span>
           <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-crimson/20 ring-1 ring-crimson/40" />Festivo</span>
         </div>
@@ -128,7 +129,7 @@ function AgendaPage() {
                 {festivo && <p className="mb-1 truncate text-[10px] font-medium text-crimson" title={festivo}>{festivo}</p>}
                 <div className="space-y-1">
                   {delDia(d).map((e) => (
-                    <button key={e.id} type="button" onClick={() => setEdit(e)} className={cn("block w-full truncate rounded px-1.5 py-0.5 text-left text-[11px]", color[e.tipo_evento] ?? color["Tarea Despacho"], e.realizada && "opacity-50 line-through")}>
+                    <button key={e.id} type="button" onClick={() => setEdit(e)} className={cn("block w-full truncate rounded px-1.5 py-0.5 text-left text-[11px]", e.realizada && e.tipo_evento === "Vencimiento Trámite" ? "bg-ok-soft text-ok ring-1 ring-ok/40" : (color[e.tipo_evento] ?? color["Tarea Despacho"]), e.realizada && "opacity-60 line-through")}>
                       {format(new Date(e.fecha_inicio), "HH:mm")} {e.titulo}
                     </button>
                   ))}
