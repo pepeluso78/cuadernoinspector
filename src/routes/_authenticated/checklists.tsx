@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Copy, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -129,6 +129,19 @@ function FichaCentro({ centroId, presentado }: { centroId: string; presentado: {
     return ini;
   });
   const [texto, setTexto] = useState("");
+  const editados = useRef(new Set<Categoria>());
+
+  useEffect(() => {
+    setDocs((prev) => {
+      const siguiente = { ...prev };
+      for (const cat of CATEGORIAS) {
+        if (editados.current.has(cat)) continue;
+        const reg = registros.find((r) => r.centro_id === centroId && r.curso_escolar === CURSO && r.categoria === cat);
+        siguiente[cat] = { estado: aEstadoDoc(reg?.estado_global), obs: reg?.observaciones_inspector ?? "" };
+      }
+      return siguiente;
+    });
+  }, [registros, centroId]);
 
   useEffect(() => {
     if (presentado?.centroId !== centroId) return;
@@ -136,7 +149,10 @@ function FichaCentro({ centroId, presentado }: { centroId: string; presentado: {
     setDocs((prev) => ({ ...prev, [cat]: { ...prev[cat], estado: "Presentado" } }));
   }, [presentado, centroId]);
 
-  const upd = (cat: Categoria, p: Partial<DocFicha>) => setDocs((prev) => ({ ...prev, [cat]: { ...prev[cat], ...p } }));
+  const upd = (cat: Categoria, p: Partial<DocFicha>) => {
+    editados.current.add(cat);
+    setDocs((prev) => ({ ...prev, [cat]: { ...prev[cat], ...p } }));
+  };
   const presentados = CATEGORIAS.filter((c) => docs[c].estado === "Presentado").length;
 
   async function guardar() {
@@ -151,6 +167,7 @@ function FichaCentro({ centroId, presentado }: { centroId: string; presentado: {
     }));
     const { error } = await supabase.from("checklists_centro").upsert(filas, { onConflict: "centro_id,curso_escolar,categoria" });
     if (error) { toast.error(error.message); return; }
+    editados.current.clear();
     qc.invalidateQueries({ queryKey: ["checklists"] });
     toast.success("Ficha guardada");
   }
