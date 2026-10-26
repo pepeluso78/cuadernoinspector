@@ -36,7 +36,6 @@ function TramitesPage() {
   const { data: tramites = [] } = useQuery(tramitesQuery);
   const { data: centros = [] } = useQuery(centrosQuery);
   const [q, setQ] = useState("");
-  const [filtro, setFiltro] = useState("abiertos");
   const [open, setOpen] = useState(false);
   const [sel, setSel] = useState<Tramite | null>(null);
   const qc = useQueryClient();
@@ -65,13 +64,9 @@ function TramitesPage() {
     }
   }, [nuevo, navigate]);
 
-  const lista = useMemo(
-    () =>
-      tramites
-        .filter((t) => (filtro === "abiertos" ? t.estado !== "Respondido / Elevado" : filtro === "cerrados" ? t.estado === "Respondido / Elevado" : true))
-        .filter((t) => `${t.asunto} ${t.numero_registro} ${t.remitente}`.toLowerCase().includes(q.toLowerCase())),
-    [tramites, q, filtro],
-  );
+  const coincide = (t: Tramite) => `${t.asunto} ${t.numero_registro} ${t.remitente}`.toLowerCase().includes(q.toLowerCase());
+  const pendientes = useMemo(() => tramites.filter((t) => !esTramiteCerrado(t.estado) && coincide(t)), [tramites, q]);
+  const realizados = useMemo(() => tramites.filter((t) => esTramiteCerrado(t.estado) && coincide(t)), [tramites, q]);
   const nombreCentro = (id: string | null) => centros.find((c) => c.id === id)?.nombre ?? "—";
 
   return (
