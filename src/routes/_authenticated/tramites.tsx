@@ -84,43 +84,45 @@ function TramitesPage() {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input className="pl-8" placeholder="Buscar por asunto, registro o remitente" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
-        <Select value={filtro} onValueChange={setFiltro}>
-          <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="abiertos">Abiertos</SelectItem>
-            <SelectItem value="cerrados">Respondidos</SelectItem>
-            <SelectItem value="todos">Todos</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
-      <div className="panel overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="border-b bg-muted/60 text-left">
-            <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:eyebrow">
-              <th>Registro</th><th>Asunto</th><th>Origen</th><th>Centro</th><th>Entrada</th><th>Límite</th><th>Plazo</th><th>Estado</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {lista.map((t) => (
-              <tr key={t.id} className="cursor-pointer hover:bg-accent/50 [&>td]:px-3 [&>td]:py-2.5" onClick={() => setSel(t)}>
-                <td className="font-mono text-xs">{t.numero_registro || "—"}</td>
-                <td className="font-medium">{t.asunto}</td>
-                <td className="text-muted-foreground">{t.origen}</td>
-                <td className="text-muted-foreground">{nombreCentro(t.centro_id)}</td>
-                <td className="font-mono text-xs">{t.fecha_entrada}</td>
-                <td className="font-mono text-xs">{t.fecha_limite}</td>
-                <td>{t.fecha_limite && <CuentaAtras fechaLimite={t.fecha_limite} cerrado={t.estado === "Respondido / Elevado"} />}</td>
-                <td className="text-xs">{t.estado}</td>
-              </tr>
-            ))}
-            {!lista.length && <tr><td colSpan={8} className="py-10 text-center text-muted-foreground">No hay trámites.</td></tr>}
-          </tbody>
-        </table>
-      </div>
+      <h2 className="eyebrow mb-2">Trámites pendientes ({pendientes.length})</h2>
+      <TablaTramites lista={pendientes} nombreCentro={nombreCentro} onSelect={setSel} vacio="No hay trámites pendientes." />
+
+      <h2 className="eyebrow mb-2 mt-8">Trámites realizados ({realizados.length})</h2>
+      <TablaTramites lista={realizados} nombreCentro={nombreCentro} onSelect={setSel} vacio="Todavía no hay trámites realizados." realizados />
 
       <NuevoTramite open={open} onOpenChange={setOpen} />
       <DetalleTramite tramite={sel} onClose={() => setSel(null)} />
+    </div>
+  );
+}
+
+function TablaTramites({ lista, nombreCentro, onSelect, vacio, realizados }: { lista: Tramite[]; nombreCentro: (id: string | null) => string; onSelect: (t: Tramite) => void; vacio: string; realizados?: boolean }) {
+  return (
+    <div className="panel overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead className="border-b bg-muted/60 text-left">
+          <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:eyebrow">
+            <th>Registro</th><th>Asunto</th><th>Origen</th><th>Centro</th><th>Entrada</th><th>Límite</th><th>Plazo</th><th>Estado</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {lista.map((t) => (
+            <tr key={t.id} className={`cursor-pointer hover:bg-accent/50 [&>td]:px-3 [&>td]:py-2.5 ${realizados ? "bg-ok-soft/40" : ""}`} onClick={() => onSelect(t)}>
+              <td className="font-mono text-xs">{t.numero_registro || "—"}</td>
+              <td className="font-medium">{t.asunto}</td>
+              <td className="text-muted-foreground">{t.origen}</td>
+              <td className="text-muted-foreground">{nombreCentro(t.centro_id)}</td>
+              <td className="font-mono text-xs">{t.fecha_entrada}</td>
+              <td className="font-mono text-xs">{t.fecha_limite}</td>
+              <td>{t.fecha_limite && <CuentaAtras fechaLimite={t.fecha_limite} cerrado={esTramiteCerrado(t.estado)} />}</td>
+              <td className="text-xs">{t.estado === "Finalizado" ? <span className="inline-flex items-center gap-1 rounded border border-ok/30 bg-ok-soft px-2 py-0.5 font-semibold text-ok"><CheckCircle2 className="h-3 w-3" /> Finalizado</span> : t.estado}</td>
+            </tr>
+          ))}
+          {!lista.length && <tr><td colSpan={8} className="py-10 text-center text-muted-foreground">{vacio}</td></tr>}
+        </tbody>
+      </table>
     </div>
   );
 }
