@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { ordenarCentros } from "@/lib/orden-centros";
 
 export type Centro = Database["public"]["Tables"]["centros"]["Row"];
 export type Tramite = Database["public"]["Tables"]["tramites"]["Row"];
