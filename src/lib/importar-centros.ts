@@ -29,14 +29,14 @@ const ORDEN: (keyof CentroImportado)[] = ["localidad", "nombre", "codigo_centro"
 
 export function tipoDesdeNombre(nombre: string): string {
   const m = nombre.trim().toUpperCase().match(/^(IESO|IES|CEIP|CEPA|CRA|CEE|CC|EI|EEI|CIFP|EOI|CPM|CEI)\b/);
-  return m ? m[1] : "Otro";
+  return m?.[1] ?? "Otro";
 }
 
 export function parsearCentros(filas: unknown[][]): CentroImportado[] {
   const limpias = filas.filter((f) => f.some((c) => String(c ?? "").trim()));
   if (!limpias.length) return [];
   let mapa: Partial<Record<keyof CentroImportado, number>> = {};
-  const cab = limpias[0].map(norm);
+  const cab = (limpias[0] ?? []).map(norm);
   const usados = new Set<number>();
   for (const [campo, test] of CAMPOS) {
     const i = cab.findIndex((h, idx) => !usados.has(idx) && test(h));
