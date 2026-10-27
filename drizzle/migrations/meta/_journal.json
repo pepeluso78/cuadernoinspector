@@ -85,6 +85,13 @@
       "when": 1793091921273,
       "tag": "0011_centros_por_inspector",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793093151696,
+      "tag": "0012_datos_por_inspector",
+      "breakpoints": true
     }
   ]
 }
