@@ -1,3 +1,4 @@
+import { solicitarRecuperacionFn } from "@/lib/recuperacion.functions";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -36,10 +37,13 @@ function AuthPage() {
     setBusy(true);
     try {
       if (mode === "reset") {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
-        });
-        if (error) throw error;
+        const r = await solicitarRecuperacionFn({ data: { email, origen: window.location.origin } });
+        if (!r.enviadoAlternativo) {
+          const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/reset-password`,
+          });
+          if (error) throw error;
+        }
         toast.success("Si el correo está registrado, recibirás un enlace para restablecer la contraseña.");
       } else if (mode === "in") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });

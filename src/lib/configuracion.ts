@@ -5,10 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 export const CARGOS = ["Inspector de Educación", "Inspectora de Educación", "Inspector Jefe", "Inspectora Jefa"] as const;
 export const PROVINCIAS = ["Albacete", "Ciudad Real", "Cuenca", "Guadalajara", "Toledo"] as const;
 export const TEMAS = ["institucional", "claro", "oscuro", "verde"] as const;
-export const configuracionSchema = z.object({ user_id: z.string().min(1), nombre: z.string().trim().min(1), apellidos: z.string().trim().min(1), cargo: z.enum(CARGOS), provincia: z.enum(PROVINCIAS), correo_referencia: z.string().trim().email().transform((v) => v.toLowerCase()), tema: z.enum(TEMAS) });
+export const configuracionSchema = z.object({ user_id: z.string().min(1), nombre: z.string().trim().min(1), apellidos: z.string().trim().min(1), cargo: z.enum(CARGOS), provincia: z.enum(PROVINCIAS), correo_referencia: z.string().trim().email().transform((v) => v.toLowerCase()), correo_recuperacion: z.union([z.literal(""), z.string().trim().email()]).default("").transform((v) => v.toLowerCase()), tema: z.enum(TEMAS) });
 export type Configuracion = z.infer<typeof configuracionSchema>;
 /** Datos en blanco para un usuario recién registrado: los completa la primera vez que entra. */
-export const CONFIG_INICIAL: Configuracion = { user_id: "", nombre: "", apellidos: "", cargo: "Inspector de Educación", provincia: "Albacete", correo_referencia: "", tema: "institucional" };
+export const CONFIG_INICIAL: Configuracion = { user_id: "", nombre: "", apellidos: "", cargo: "Inspector de Educación", provincia: "Albacete", correo_referencia: "", correo_recuperacion: "", tema: "institucional" };
 export const nombreInspector = (c: Configuracion) => `${c.nombre} ${c.apellidos}`.trim();
 export const servicioProvincial = (provincia: string) => `Delegación Provincial de Educación, Cultura y Deportes de ${provincia}`;
 export { busquedaCorreo } from "./correo-filtro";
