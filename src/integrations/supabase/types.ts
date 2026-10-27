@@ -212,6 +212,7 @@ export type Database = {
         Row: {
           apellidos: string
           cargo: string
+          correo_recuperacion: string
           correo_referencia: string
           id: number
           nombre: string
@@ -222,6 +223,7 @@ export type Database = {
         Insert: {
           apellidos?: string
           cargo?: string
+          correo_recuperacion?: string
           correo_referencia?: string
           id?: number
           nombre?: string
@@ -232,6 +234,7 @@ export type Database = {
         Update: {
           apellidos?: string
           cargo?: string
+          correo_recuperacion?: string
           correo_referencia?: string
           id?: number
           nombre?: string
