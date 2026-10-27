@@ -16,7 +16,8 @@ function ok<T>(r: { data: T | null; error: { message: string } | null }): T {
 
 export const centrosQuery = queryOptions({
   queryKey: ["centros"],
-  queryFn: async () => ok(await supabase.from("centros").select("*").order("nombre")),
+  queryFn: async () =>
+    ordenarCentros(ok(await supabase.from("centros").select("*").order("nombre"))),
 });
 export const centroQuery = (id: string) =>
   queryOptions({
