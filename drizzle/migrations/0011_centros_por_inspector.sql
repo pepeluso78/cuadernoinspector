@@ -1,0 +1,12 @@
+ALTER TABLE public.centros ADD COLUMN user_id uuid DEFAULT auth.uid();
+UPDATE public.centros SET user_id = '5f62d66d-83c8-4d45-9954-74ee5343adc0' WHERE user_id IS NULL;
+ALTER TABLE public.centros DROP CONSTRAINT centros_codigo_centro_key;
+CREATE UNIQUE INDEX centros_user_codigo_key ON public.centros(user_id, codigo_centro);
+DROP POLICY auth_select_centros ON public.centros;
+DROP POLICY auth_insert_centros ON public.centros;
+DROP POLICY auth_update_centros ON public.centros;
+DROP POLICY auth_delete_centros ON public.centros;
+CREATE POLICY centros_select_propios ON public.centros FOR SELECT TO authenticated USING (user_id = auth.uid());
+CREATE POLICY centros_insert_propios ON public.centros FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+CREATE POLICY centros_update_propios ON public.centros FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+CREATE POLICY centros_delete_propios ON public.centros FOR DELETE TO authenticated USING (user_id = auth.uid());
