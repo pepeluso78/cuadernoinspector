@@ -32,6 +32,7 @@ export type Database = {
           tipo_evento: string
           titulo: string
           tramite_id: string | null
+          user_id: string | null
         }
         Insert: {
           cargo_visita?: string
@@ -50,6 +51,7 @@ export type Database = {
           tipo_evento: string
           titulo: string
           tramite_id?: string | null
+          user_id?: string | null
         }
         Update: {
           cargo_visita?: string
@@ -68,6 +70,7 @@ export type Database = {
           tipo_evento?: string
           titulo?: string
           tramite_id?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -167,6 +170,7 @@ export type Database = {
           observaciones_inspector: string | null
           requerimiento_generado: string | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           categoria: string
@@ -179,6 +183,7 @@ export type Database = {
           observaciones_inspector?: string | null
           requerimiento_generado?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           categoria?: string
@@ -191,6 +196,7 @@ export type Database = {
           observaciones_inspector?: string | null
           requerimiento_generado?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -246,6 +252,7 @@ export type Database = {
           ruta: string
           tamano: number
           tramite_id: string
+          user_id: string | null
         }
         Insert: {
           categoria?: string
@@ -257,6 +264,7 @@ export type Database = {
           ruta: string
           tamano: number
           tramite_id: string
+          user_id?: string | null
         }
         Update: {
           categoria?: string
@@ -268,6 +276,7 @@ export type Database = {
           ruta?: string
           tamano?: number
           tramite_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -296,6 +305,7 @@ export type Database = {
           persona_nombre: string
           provincia_guardia: string
           respuesta: string
+          user_id: string | null
         }
         Insert: {
           cargo_guardia?: string
@@ -313,6 +323,7 @@ export type Database = {
           persona_nombre?: string
           provincia_guardia?: string
           respuesta?: string
+          user_id?: string | null
         }
         Update: {
           cargo_guardia?: string
@@ -330,6 +341,7 @@ export type Database = {
           persona_nombre?: string
           provincia_guardia?: string
           respuesta?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -383,6 +395,7 @@ export type Database = {
           id: string
           importante: boolean | null
           titulo: string
+          user_id: string | null
         }
         Insert: {
           categoria: string
@@ -392,6 +405,7 @@ export type Database = {
           id?: string
           importante?: boolean | null
           titulo: string
+          user_id?: string | null
         }
         Update: {
           categoria?: string
@@ -401,6 +415,7 @@ export type Database = {
           id?: string
           importante?: boolean | null
           titulo?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -423,6 +438,7 @@ export type Database = {
           observaciones: string | null
           presentado: boolean
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           centro_id: string
@@ -434,6 +450,7 @@ export type Database = {
           observaciones?: string | null
           presentado?: boolean
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           centro_id?: string
@@ -445,6 +462,7 @@ export type Database = {
           observaciones?: string | null
           presentado?: boolean
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -474,6 +492,7 @@ export type Database = {
           prioridad: string | null
           remitente: string | null
           tipo_actuacion: string | null
+          user_id: string | null
         }
         Insert: {
           asunto: string
@@ -492,6 +511,7 @@ export type Database = {
           prioridad?: string | null
           remitente?: string | null
           tipo_actuacion?: string | null
+          user_id?: string | null
         }
         Update: {
           asunto?: string
@@ -510,6 +530,7 @@ export type Database = {
           prioridad?: string | null
           remitente?: string | null
           tipo_actuacion?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
