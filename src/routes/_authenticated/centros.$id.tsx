@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ArrowLeft, ClipboardCheck, FileDown, Search, Star, Trash2 } from "lucide-react";
+import { ArrowLeft, ClipboardCheck, FileDown, Pencil, Search, Star, Trash2 } from "lucide-react";
 import { exportarCuadernoPDF } from "@/lib/exportar-pdf";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -86,7 +86,7 @@ function CentroPage() {
         </section>
       </div>
 
-      <CuadernoCampo centroId={id} />
+      <CuadernoCampo centroId={id} centro={c} />
     </div>
   );
 }
@@ -95,20 +95,26 @@ function F({ label, v, on, type = "text" }: { label: string; v: string | null; o
   return <div className="space-y-1"><Label className="text-xs">{label}</Label><Input type={type} value={v ?? ""} onChange={(e) => on(e.target.value)} /></div>;
 }
 
-function CuadernoCampo({ centroId }: { centroId: string }) {
+function CuadernoCampo({ centroId, centro }: { centroId: string; centro: Centro }) {
   const qc = useQueryClient();
+  const config = useConfiguracion();
   const { data: notas = [] } = useQuery(notasQuery(centroId));
   const [tab, setTab] = useState("Incidencia");
   const [q, setQ] = useState("");
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
+  const [editId, setEditId] = useState<string | null>(null);
   const lista = notas.filter((n) => n.categoria === tab && `${n.titulo} ${n.contenido}`.toLowerCase().includes(q.toLowerCase()));
 
+  function cancelar() { setEditId(null); setTitulo(""); setContenido(""); }
   async function add() {
     if (!titulo.trim()) { toast.error("Añade un título"); return; }
-    const { error } = await supabase.from("notas_centro").insert({ centro_id: centroId, categoria: tab, titulo, contenido });
+    const { error } = editId
+      ? await supabase.from("notas_centro").update({ titulo, contenido }).eq("id", editId)
+      : await supabase.from("notas_centro").insert({ centro_id: centroId, categoria: tab, titulo, contenido });
     if (error) { toast.error(error.message); return; }
-    setTitulo(""); setContenido("");
+    if (editId) toast.success("Nota actualizada");
+    cancelar();
     qc.invalidateQueries({ queryKey: ["notas", centroId] });
   }
   async function toggle(id: string, imp: boolean) {
@@ -117,6 +123,7 @@ function CuadernoCampo({ centroId }: { centroId: string }) {
   }
   async function del(id: string) {
     await supabase.from("notas_centro").delete().eq("id", id);
+    if (editId === id) cancelar();
     qc.invalidateQueries({ queryKey: ["notas", centroId] });
   }
   const etiqueta: Record<string, string> = { Incidencia: "Incidencias", "Conversación": "Conversaciones", Documento: "Documentos", Otros: "Otros aspectos" };
@@ -125,21 +132,26 @@ function CuadernoCampo({ centroId }: { centroId: string }) {
     <section className="panel p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-serif text-xl font-semibold text-primary">Cuaderno de Campo</h2>
-        <div className="relative w-64">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input className="pl-8" placeholder="Buscar en notas" value={q} onChange={(e) => setQ(e.target.value)} />
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input className="pl-8" placeholder="Buscar en notas" value={q} onChange={(e) => setQ(e.target.value)} />
+          </div>
+          <Button variant="outline" onClick={() => { if (!exportarCuadernoPDF(centro, notas, config)) toast.error("Permite las ventanas emergentes para exportar"); }}><FileDown className="h-4 w-4" /> PDF de todas las notas</Button>
         </div>
       </div>
-      <Tabs value={tab} onValueChange={setTab}>
+      <Tabs value={tab} onValueChange={(v) => { setTab(v); cancelar(); }}>
         <TabsList>
           {CATEGORIAS_NOTA.map((c) => <TabsTrigger key={c} value={c}>{etiqueta[c]} <span className="ml-1 font-mono text-[10px] opacity-60">{notas.filter((n) => n.categoria === c).length}</span></TabsTrigger>)}
         </TabsList>
       </Tabs>
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <div className="space-y-2">
+          {editId && <p className="eyebrow text-crimson">Editando nota</p>}
           <Input placeholder="Título" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
-          <Textarea rows={5} placeholder="Contenido (fecha y hora se registran automáticamente)" value={contenido} onChange={(e) => setContenido(e.target.value)} />
-          <Button className="w-full" onClick={add}>Añadir a {etiqueta[tab]}</Button>
+          <Textarea rows={editId ? 10 : 5} placeholder="Contenido (fecha y hora se registran automáticamente)" value={contenido} onChange={(e) => setContenido(e.target.value)} />
+          <Button className="w-full" onClick={add}>{editId ? "Guardar cambios" : `Añadir a ${etiqueta[tab]}`}</Button>
+          {editId && <Button variant="outline" className="w-full" onClick={cancelar}>Cancelar edición</Button>}
         </div>
         <ul className="space-y-2 lg:col-span-2">
           {lista.map((n) => (
@@ -150,6 +162,7 @@ function CuadernoCampo({ centroId }: { centroId: string }) {
                   <p className="font-semibold">{n.titulo}</p>
                   <p className="whitespace-pre-wrap text-sm text-muted-foreground">{n.contenido}</p>
                 </div>
+                <button type="button" aria-label="Editar nota" title="Editar nota" onClick={() => { setEditId(n.id); setTitulo(n.titulo); setContenido(n.contenido ?? ""); }}><Pencil className="h-4 w-4 text-muted-foreground" /></button>
                 <button type="button" aria-label="Marcar importante" onClick={() => toggle(n.id, !!n.importante)}><Star className={`h-4 w-4 ${n.importante ? "fill-crimson text-crimson" : "text-muted-foreground"}`} /></button>
                 <button type="button" aria-label="Eliminar nota" onClick={() => del(n.id)}><Trash2 className="h-4 w-4 text-muted-foreground" /></button>
               </div>
