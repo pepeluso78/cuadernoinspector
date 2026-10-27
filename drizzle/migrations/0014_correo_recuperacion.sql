@@ -1,0 +1,1 @@
+ALTER TABLE public.configuracion_aplicacion ADD COLUMN IF NOT EXISTS correo_recuperacion text NOT NULL DEFAULT '';
