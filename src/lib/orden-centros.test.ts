@@ -32,6 +32,6 @@ describe("ordenarCentros", () => {
     ];
     const ordenado = ordenarCentros(original);
     expect(ordenado.map((c) => c.nombre)).toEqual(["Centro A", "Centro B"]);
-    expect(original[0].nombre).toBe("Centro B");
+    expect(original[0]?.nombre).toBe("Centro B");
   });
 });
