@@ -34,7 +34,7 @@ async function gmail(path: string) {
 export async function importarCorreos(cliente?: SupabaseClient<Database>) {
   const db = cliente ?? (await import("@/integrations/supabase/client.server")).supabaseAdmin;
   // La cuenta Gmail conectada es la del inspector titular: se usa su correo de referencia.
-  const { data: config, error: configError } = await db.from("configuracion_aplicacion").select("correo_referencia").neq("correo_referencia", "").order("id").limit(1).maybeSingle();
+  const { data: config, error: configError } = await db.from("configuracion_aplicacion").select("correo_referencia,user_id").neq("correo_referencia", "").order("id").limit(1).maybeSingle();
   if (configError) throw configError;
   const remitenteConfigurado = config?.correo_referencia || CORREO_INICIAL;
   const perfil = (await gmail(`/users/me/profile`)) as { emailAddress?: string };
@@ -71,7 +71,7 @@ export async function importarCorreos(cliente?: SupabaseClient<Database>) {
     let tramiteId = hechos.get(id);
     if (!tramiteId) {
       const { data, error } = await db.from("tramites").insert({
-        ...correoATramite({ asunto: h("subject"), cuerpo, fecha: new Date(Number(m.internalDate)), remitente: h("from") }), correo_id: id,
+        ...correoATramite({ asunto: h("subject"), cuerpo, fecha: new Date(Number(m.internalDate)), remitente: h("from") }), correo_id: id, ...(config?.user_id ? { user_id: config.user_id } : {}),
       }).select("id").single();
       if (error || !data) { errores.push(`No se pudo crear el trámite de «${h("subject") }»`); continue; }
       tramiteId = data.id; creados++;
@@ -88,7 +88,7 @@ export async function importarCorreos(cliente?: SupabaseClient<Database>) {
         const { error: uploadError } = await db.storage.from(DOCUMENTOS_BUCKET).upload(ruta, bytes, { contentType: mime, upsert: false });
         // Una carga terminada sin metadatos se recupera en el siguiente intento.
         if (uploadError && !/already exists|duplicate/i.test(uploadError.message)) throw uploadError;
-        const { error } = await db.from("documentos_tramite").upsert({ tramite_id: tramiteId, nombre: parte.filename, ruta, mime_type: mime, tamano: bytes.length, categoria: "Correo", correo_parte_id: parte.clave }, { onConflict: "tramite_id,correo_parte_id", ignoreDuplicates: true });
+        const { error } = await db.from("documentos_tramite").upsert({ tramite_id: tramiteId, nombre: parte.filename, ruta, mime_type: mime, tamano: bytes.length, categoria: "Correo", correo_parte_id: parte.clave, ...(config?.user_id ? { user_id: config.user_id } : {}) }, { onConflict: "tramite_id,correo_parte_id", ignoreDuplicates: true });
         if (error) throw error;
         adjuntos++;
       } catch (e) {
