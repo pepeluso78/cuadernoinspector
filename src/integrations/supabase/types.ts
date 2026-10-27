@@ -107,6 +107,7 @@ export type Database = {
           supervisa_partes: boolean
           telefono: string | null
           tipo_centro: string | null
+          user_id: string | null
         }
         Insert: {
           codigo_centro: string
@@ -128,6 +129,7 @@ export type Database = {
           supervisa_partes?: boolean
           telefono?: string | null
           tipo_centro?: string | null
+          user_id?: string | null
         }
         Update: {
           codigo_centro?: string
@@ -149,6 +151,7 @@ export type Database = {
           supervisa_partes?: boolean
           telefono?: string | null
           tipo_centro?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
