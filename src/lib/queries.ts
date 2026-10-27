@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { ordenarCentros } from "@/lib/orden-centros";
 
 export type Centro = Database["public"]["Tables"]["centros"]["Row"];
 export type Tramite = Database["public"]["Tables"]["tramites"]["Row"];
@@ -16,7 +17,8 @@ function ok<T>(r: { data: T | null; error: { message: string } | null }): T {
 
 export const centrosQuery = queryOptions({
   queryKey: ["centros"],
-  queryFn: async () => ok(await supabase.from("centros").select("*").order("nombre")),
+  queryFn: async () =>
+    ordenarCentros(ok(await supabase.from("centros").select("*").order("nombre"))),
 });
 export const centroQuery = (id: string) =>
   queryOptions({
