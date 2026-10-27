@@ -5,7 +5,7 @@ import type { Tramite } from "./queries";
 const tramite = (id: string, estado: string, asunto: string, fecha = "2026-10-26"): Tramite => ({
   id, estado, asunto, fecha_entrada: fecha, numero_registro: "NI-468", remitente: "Delegación",
   origen: "Nota Interior", centro_id: null, descripcion_entrada: null, borrador_informe: null,
-  correo_id: null, created_at: null, fecha_limite: null, plazo_dias: 10, prioridad: "Media", tipo_actuacion: null,
+  correo_id: null, user_id: null, created_at: null, fecha_limite: null, plazo_dias: 10, prioridad: "Media", tipo_actuacion: null,
 });
 const registros = [
   tramite("pendiente", "Pendiente", "Compensación"),

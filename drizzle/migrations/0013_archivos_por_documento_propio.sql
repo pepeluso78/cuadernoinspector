@@ -1,0 +1,1 @@
+CREATE POLICY tramites_archivos_select_documento_propio ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'tramites-documentos' AND EXISTS (SELECT 1 FROM public.documentos_tramite d WHERE d.ruta = name AND d.user_id = auth.uid()));

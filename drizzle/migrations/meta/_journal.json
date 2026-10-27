@@ -92,6 +92,13 @@
       "when": 1793093151696,
       "tag": "0012_datos_por_inspector",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793093256513,
+      "tag": "0013_archivos_por_documento_propio",
+      "breakpoints": true
     }
   ]
 }
