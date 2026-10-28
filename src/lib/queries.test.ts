@@ -60,8 +60,8 @@ describe("staleTime de las consultas", () => {
   it("una invalidación tras guardar vuelve a marcar los datos como obsoletos aunque el staleTime siga vivo", async () => {
     const qc = new QueryClient();
     await qc.prefetchQuery({ ...tramitesQuery, queryFn: async () => [] });
-    expect(qc.isQueryStale({ queryKey: ["tramites"] })).toBe(false);
+    expect(qc.getQueryState({ queryKey: ["tramites"] })?.isStale).toBe(false);
     qc.invalidateQueries({ queryKey: ["tramites"] });
-    expect(qc.isQueryStale({ queryKey: ["tramites"] })).toBe(true);
+    expect(qc.getQueryState({ queryKey: ["tramites"] })?.isStale).toBe(true);
   });
 });
