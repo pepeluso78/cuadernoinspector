@@ -56,4 +56,12 @@ describe("staleTime de las consultas", () => {
     expect(partesQuery("2025-26").queryKey).toEqual(["partes", "2025-26"]);
     expect(notasQuery("c1").queryKey).toEqual(["notas", "c1"]);
   });
+
+  it("una invalidación tras guardar vuelve a marcar los datos como obsoletos aunque el staleTime siga vivo", async () => {
+    const qc = new QueryClient();
+    await qc.prefetchQuery({ ...tramitesQuery, queryFn: async () => [] });
+    expect(qc.isQueryStale({ queryKey: ["tramites"] })).toBe(false);
+    qc.invalidateQueries({ queryKey: ["tramites"] });
+    expect(qc.isQueryStale({ queryKey: ["tramites"] })).toBe(true);
+  });
 });
