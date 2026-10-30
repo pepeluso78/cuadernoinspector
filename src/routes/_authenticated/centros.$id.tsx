@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ArrowLeft, ClipboardCheck, FileDown, Pencil, Search, Star, Trash2 } from "lucide-react";
+import { ArrowLeft, CalendarDays, ClipboardCheck, FileDown, FilePenLine, Pencil, Search, Star, Trash2 } from "lucide-react";
 import { exportarCuadernoPDF } from "@/lib/exportar-pdf";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { centroQuery, notasQuery, type Centro } from "@/lib/queries";
+import { EditorVisita } from "@/components/editor-visita";
+import { centroQuery, notasQuery, visitasCentroQuery, type Centro, type Evento } from "@/lib/queries";
 import { CATEGORIAS_NOTA } from "@/lib/constants";
+import { resenaCompleta } from "@/lib/visitas";
 import { useConfiguracion } from "@/lib/configuracion";
 
 export const Route = createFileRoute("/_authenticated/centros/$id")({
@@ -86,6 +88,7 @@ function CentroPage() {
         </section>
       </div>
 
+      <VisitasCentro centroId={id} centro={c} />
       <CuadernoCampo centroId={id} centro={c} />
     </div>
   );
@@ -93,6 +96,53 @@ function CentroPage() {
 
 function F({ label, v, on, type = "text" }: { label: string; v: string | null; on: (v: string) => void; type?: string }) {
   return <div className="space-y-1"><Label className="text-xs">{label}</Label><Input type={type} value={v ?? ""} onChange={(e) => on(e.target.value)} /></div>;
+}
+
+function VisitasCentro({ centroId, centro }: { centroId: string; centro: Centro }) {
+  const { data: visitas = [] } = useQuery(visitasCentroQuery(centroId));
+  const [estado, setEstado] = useState("todas");
+  const [edit, setEdit] = useState<{ visita: Partial<Evento>; resena: boolean } | null>(null);
+  const lista = visitas.filter((v) => estado === "todas" || (estado === "realizadas" ? v.realizada : !v.realizada));
+  const realizadas = visitas.filter((v) => v.realizada).length;
+
+  return (
+    <section className="panel p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="font-serif text-xl font-semibold text-primary">Visitas a este centro</h2>
+          <p className="text-xs text-muted-foreground">{visitas.length} registradas · {realizadas} realizadas</p>
+        </div>
+        <Tabs value={estado} onValueChange={setEstado}>
+          <TabsList>
+            <TabsTrigger value="todas">Todas</TabsTrigger>
+            <TabsTrigger value="realizadas">Realizadas</TabsTrigger>
+            <TabsTrigger value="previstas">Previstas</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+      <ul className="divide-y">
+        {lista.map((v) => (
+          <li key={v.id} className="flex flex-wrap items-center gap-4 py-3">
+            <div className="min-w-0 flex-1 basis-64">
+              <div className="mb-1 flex flex-wrap items-center gap-3">
+                <span className="flex items-center gap-1 font-mono text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{format(new Date(v.fecha_inicio), "dd/MM/yyyy · HH:mm", { locale: es })}</span>
+                <span className={v.realizada ? "text-xs font-semibold text-ok" : "text-xs font-semibold text-warn"}>{v.realizada ? "Realizada" : "Prevista"}</span>
+                <span className="text-xs text-muted-foreground">{resenaCompleta(v) ? "Reseña completa" : "Reseña pendiente"}</span>
+              </div>
+              <p className="break-words font-semibold">{v.titulo}</p>
+              <p className="text-xs text-muted-foreground">{v.inspector_visita}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="icon" aria-label={`Editar visita ${v.titulo}`} title="Editar visita" onClick={() => setEdit({ visita: v, resena: false })}><Pencil className="h-4 w-4" /></Button>
+              <Button variant="outline" onClick={() => setEdit({ visita: v, resena: true })}><FilePenLine className="h-4 w-4" />{resenaCompleta(v) ? "Ver reseña" : "Registrar reseña"}</Button>
+            </div>
+          </li>
+        ))}
+        {!lista.length && <li className="py-8 text-center text-sm text-muted-foreground">Sin visitas en esta selección.</li>}
+      </ul>
+      {edit && <EditorVisita visita={edit.visita} centros={[centro]} resena={edit.resena} onClose={() => setEdit(null)} />}
+    </section>
+  );
 }
 
 function CuadernoCampo({ centroId, centro }: { centroId: string; centro: Centro }) {
