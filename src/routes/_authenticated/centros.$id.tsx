@@ -138,7 +138,7 @@ function VisitasCentro({ centroId, centro }: { centroId: string; centro: Centro 
             </div>
           </li>
         ))}
-        {!lista.length && <li className="py-8 text-center text-sm text-muted-foreground">Sin visitas en esta selección.</li>}
+        {!lista.length && <li className="py-8 text-center text-sm text-muted-foreground">{visitas.length ? "Sin visitas en esta selección." : "Sin visitas registradas en este centro."}</li>}
       </ul>
       {edit && <EditorVisita visita={edit.visita} centros={[centro]} resena={edit.resena} onClose={() => setEdit(null)} />}
     </section>
