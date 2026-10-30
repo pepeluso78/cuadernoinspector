@@ -13,6 +13,7 @@ import {
   notasQuery,
   partesQuery,
   tramitesQuery,
+  visitasCentroQuery,
 } from "@/lib/queries";
 
 const MINUTO = 60_000;
@@ -63,5 +64,18 @@ describe("staleTime de las consultas", () => {
     expect(qc.getQueryState(["tramites"])?.isInvalidated).toBe(false);
     qc.invalidateQueries({ queryKey: ["tramites"] });
     expect(qc.getQueryState(["tramites"])?.isInvalidated).toBe(true);
+  });
+
+  it("mantiene las visitas de un centro 5 minutos sin releer", () => {
+    expect(visitasCentroQuery("c1").staleTime).toBe(5 * MINUTO);
+  });
+
+  it("la lista de visitas de un centro se refresca al guardar una visita desde la agenda", async () => {
+    expect(visitasCentroQuery("c1").queryKey).toEqual(["eventos", "c1", "visitas"]);
+    const qc = new QueryClient();
+    await qc.prefetchQuery({ ...visitasCentroQuery("c1"), queryFn: async () => [] });
+    expect(qc.getQueryState(["eventos", "c1", "visitas"])?.isInvalidated).toBe(false);
+    qc.invalidateQueries({ queryKey: ["eventos"] });
+    expect(qc.getQueryState(["eventos", "c1", "visitas"])?.isInvalidated).toBe(true);
   });
 });

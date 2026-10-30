@@ -55,6 +55,19 @@ export const eventosQuery = queryOptions({
   staleTime: 5 * MINUTO,
   queryFn: async () => ok(await supabase.from("agenda_eventos").select("*").order("fecha_inicio")),
 });
+// La clave empieza por ["eventos"], así que las mutaciones que ya invalidan ["eventos"] refrescan esta lista.
+export const visitasCentroQuery = (centroId: string) =>
+  queryOptions({
+    queryKey: ["eventos", centroId, "visitas"],
+    staleTime: 5 * MINUTO,
+    queryFn: async () =>
+      ok(await supabase
+        .from("agenda_eventos")
+        .select("*")
+        .eq("centro_id", centroId)
+        .eq("tipo_evento", "Visita a Centro")
+        .order("fecha_inicio", { ascending: false })),
+  });
 export const normativaQuery = queryOptions({
   queryKey: ["normativa"],
   staleTime: 12 * HORA,
