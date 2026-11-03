@@ -28,7 +28,11 @@ const CAMPOS: [keyof CentroImportado, (h: string) => boolean][] = [
 const ORDEN: (keyof CentroImportado)[] = ["localidad", "nombre", "codigo_centro", "telefono", "email_centro", "director_nombre", "jefe_estudios_nombre", "secretario_nombre"];
 
 export function tipoDesdeNombre(nombre: string): string {
-  const m = nombre.trim().toUpperCase().match(/^(IESO|IES|CEIP|CEPA|CRA|CEE|CC|EI|EEI|CIFP|EOI|CPM|CEI)\b/);
+  const n = nombre.trim().toUpperCase();
+  // Etiquetas con nombre propio: no se dejan como un genérico «Escuela».
+  if (/^ESCUELA DE MUSICA\b/.test(n)) return "Escuela de Música";
+  if (/^(CPEE|CEE)\b/.test(n)) return "Educación Especial";
+  const m = n.match(/^(IESO|IES|CEIP|CPEI|CEPA|CRA|CC|EI|EEI|CIFP|EOI|CPM|CEI)\b/);
   return m?.[1] ?? "Otro";
 }
 

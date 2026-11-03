@@ -1,4 +1,6 @@
 # Tareas abiertas
+- [ ] Valorar el enlace de la Agenda con el calendario de Outlook (JCCM): qué autorización hace falta y por qué vía.
+- [x] Etiquetas de centro: «Escuela de Música» en lugar de «Escuela»; orden con concertados y educación especial antes que las escuelas infantiles.
 - [x] Marcar documentos como presentados directamente desde el listado de centros, conservando sus observaciones.
 - [ ] Comprobar un adjunto real reenviado desde JCCM: pendiente de recibir un correo que cumpla el filtro.
 

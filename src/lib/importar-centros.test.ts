@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { parsearCentros } from "./importar-centros";
+import { parsearCentros, tipoDesdeNombre } from "./importar-centros";
+
+describe("tipoDesdeNombre", () => {
+  it("etiqueta las escuelas de música con su nombre, no como «Escuela»", () => {
+    expect(tipoDesdeNombre("ESCUELA DE MUSICA MODERNA (AYTO)")).toBe("Escuela de Música");
+  });
+  it("etiqueta la educación especial", () => {
+    expect(tipoDesdeNombre("CPEE Nuestra Señora del Prado")).toBe("Educación Especial");
+    expect(tipoDesdeNombre("CEE San Rafael")).toBe("Educación Especial");
+  });
+});
+
 
 describe("parsearCentros", () => {
   it("lee columnas por cabecera en el orden indicado", () => {
