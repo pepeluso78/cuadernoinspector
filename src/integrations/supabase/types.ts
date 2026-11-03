@@ -25,6 +25,7 @@ export type Database = {
           id: string
           inspector_visita: string
           notas_visita: string | null
+          outlook_id: string | null
           problemas_visita: string
           provincia_visita: string
           realizada: boolean | null
@@ -44,6 +45,7 @@ export type Database = {
           id?: string
           inspector_visita?: string
           notas_visita?: string | null
+          outlook_id?: string | null
           problemas_visita?: string
           provincia_visita?: string
           realizada?: boolean | null
@@ -63,6 +65,7 @@ export type Database = {
           id?: string
           inspector_visita?: string
           notas_visita?: string | null
+          outlook_id?: string | null
           problemas_visita?: string
           provincia_visita?: string
           realizada?: boolean | null
