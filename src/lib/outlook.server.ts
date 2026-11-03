@@ -23,7 +23,7 @@ async function graph<T>(ruta: string, op: Opciones = {}): Promise<T> {
       "X-Connection-Api-Key": conexion,
       ...(op.body ? { "Content-Type": "application/json" } : {}),
     },
-    body: op.body ? JSON.stringify(op.body) : undefined,
+    body: op.body ? JSON.stringify(op.body) : null,
   });
   if (!respuesta.ok) {
     const detalle = (await respuesta.text()).slice(0, 300);

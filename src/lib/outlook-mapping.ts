@@ -98,7 +98,7 @@ export function horaMadrid(iso: string): string {
   if (Number.isNaN(fecha.getTime())) throw new Error(`Fecha no válida: ${iso}`);
   const partes: Record<string, string> = {};
   for (const p of relojMadrid.formatToParts(fecha)) partes[p.type] = p.value;
-  return `${partes.year}-${partes.month}-${partes.day}T${partes.hour}:${partes.minute}:${partes.second}`;
+  return `${partes["year"]}-${partes["month"]}-${partes["day"]}T${partes["hour"]}:${partes["minute"]}:${partes["second"]}`;
 }
 
 export type CuerpoEventoOutlook = {
