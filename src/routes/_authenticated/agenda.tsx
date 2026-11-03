@@ -6,7 +6,7 @@ import {
   addDays, addMonths, addWeeks, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, startOfMonth, startOfWeek,
 } from "date-fns";
 import { es } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Check, Printer, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Check, Printer, Loader2, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -17,11 +17,13 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { centrosQuery, eventosQuery, guardiasQuery, type Evento } from "@/lib/queries";
-import { TIPOS_EVENTO } from "@/lib/constants";
+import { TIPOS_EVENTO, TIPO_OUTLOOK } from "@/lib/constants";
 import { FESTIVOS, toISODate } from "@/lib/plazos";
 import { cn } from "@/lib/utils";
 import { useConfiguracion, nombreInspector } from "@/lib/configuracion";
-import { entradasAgenda, type VistaAgenda } from "@/lib/agenda-export";
+import { useServerFn } from "@tanstack/react-start";
+import { entradasAgenda, periodoAgenda, type VistaAgenda } from "@/lib/agenda-export";
+import { sincronizarOutlook } from "@/lib/outlook.functions";
 
 export const Route = createFileRoute("/_authenticated/agenda")({
   head: () => ({ meta: [{ title: "Agenda y Plazos · SIE-CLM" }, { name: "description", content: "Visitas, tareas y vencimientos de trámites." }, { property: "og:title", content: "Agenda y Plazos · SIE-CLM" }, { property: "og:description", content: "Visitas, tareas y vencimientos de trámites." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -35,6 +37,7 @@ const color: Record<string, string> = {
   "Tarea Despacho": "bg-warn-soft text-warn",
   "Actividades de Formación": "bg-ok-soft text-ok",
   "Tareas de Coordinación": "bg-accent text-accent-foreground ring-1 ring-border",
+  [TIPO_OUTLOOK]: "bg-muted text-muted-foreground ring-1 ring-border",
 };
 const SIN = "__none";
 
@@ -50,6 +53,9 @@ function AgendaPage() {
   const [vista, setVista] = useState<VistaAgenda>("mes");
   const [ref, setRef] = useState(new Date());
   const [edit, setEdit] = useState<Partial<Evento> | null>(null);
+  const [sincronizando, setSincronizando] = useState(false);
+  const qc = useQueryClient();
+  const sincronizar = useServerFn(sincronizarOutlook);
 
   const ini = vista === "mes" ? startOfWeek(startOfMonth(ref), { weekStartsOn: 1 }) : startOfWeek(ref, { weekStartsOn: 1 });
   const fin = vista === "mes" ? endOfWeek(endOfMonth(ref), { weekStartsOn: 1 }) : endOfWeek(ref, { weekStartsOn: 1 });
@@ -60,6 +66,24 @@ function AgendaPage() {
   const nombreCentro = (id: string | null) => centros.find((c) => c.id === id)?.nombre;
   const pendientes = entradasAgenda(eventos, [], centros, "agenda", ref);
   const datosListos = [eventosEstado, centrosEstado, guardiasEstado].every((q) => q.isSuccess && !q.isFetching);
+  async function sincronizarConOutlook() {
+    setSincronizando(true);
+    try {
+      const { inicio, fin } = periodoAgenda(vista, ref, new Date());
+      const hasta = fin ?? addDays(inicio, 90);
+      const r = await sincronizar({ data: { desde: inicio.toISOString(), hasta: hasta.toISOString() } });
+      qc.invalidateQueries({ queryKey: ["eventos"] });
+      toast.success(
+        r.traidos || r.enviados
+          ? `${r.traidos} ${r.traidos === 1 ? "cita traída" : "citas traídas"} de Outlook · ${r.enviados} ${r.enviados === 1 ? "enviada" : "enviadas"} a Outlook`
+          : `No hay nada nuevo que sincronizar (${r.vistos} compromisos revisados)`,
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "No se ha podido sincronizar con Outlook");
+    } finally {
+      setSincronizando(false);
+    }
+  }
   async function imprimir() {
     setImprimiendo(true);
     try {
@@ -76,6 +100,10 @@ function AgendaPage() {
         <Button variant="outline" onClick={imprimir} disabled={imprimiendo || !datosListos}>
           {imprimiendo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
           {vista === "agenda" ? "PDF de pendientes" : vista === "semana" ? "PDF de la semana" : "PDF del mes"}
+        </Button>
+        <Button variant="outline" onClick={sincronizarConOutlook} disabled={sincronizando}>
+          {sincronizando ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+          Sincronizar con Outlook
         </Button>
         <Button onClick={() => setEdit({ tipo_evento: "Visita a Centro", fecha_inicio: format(new Date(), "yyyy-MM-dd'T'09:00"), titulo: "" })}><Plus className="h-4 w-4" /> Nuevo evento</Button>
       </PageHeader>
@@ -95,6 +123,7 @@ function AgendaPage() {
         )}
         <div className="ml-auto flex flex-wrap gap-3 text-xs">
           {TIPOS_EVENTO.map((t) => <span key={t} className="flex items-center gap-1"><span className={cn("h-2.5 w-2.5 rounded-sm", color[t])} />{t}</span>)}
+          <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-muted ring-1 ring-border" />Desde Outlook</span>
           <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-ok-soft ring-1 ring-ok/40" />Trámite finalizado</span>
           <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-crimson/15 ring-1 ring-crimson/30" />Guardia</span>
           <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-crimson/20 ring-1 ring-crimson/40" />Festivo</span>
@@ -188,13 +217,14 @@ function EditorEvento({ ev, onClose }: { ev: Partial<Evento> | null; onClose: ()
       <DialogContent>
         <DialogHeader><DialogTitle>{f.id ? "Editar evento" : "Nuevo evento"}</DialogTitle></DialogHeader>
         {esVencimiento && <p className="rounded bg-late-soft p-2 text-xs text-late">Vencimiento generado automáticamente desde un trámite. Cambia la fecha límite en el módulo de Trámites.</p>}
+        {!!f.outlook_id && <p className="rounded bg-muted p-2 text-xs text-muted-foreground">Aparece también en tu calendario de Outlook.</p>}
         <div className="grid gap-3">
           <div className="space-y-1.5"><Label>Título</Label><Input value={f.titulo ?? ""} onChange={(e) => setF({ ...f, titulo: e.target.value })} disabled={esVencimiento} /></div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5"><Label>Tipo</Label>
               <Select value={f.tipo_evento ?? "Visita a Centro"} onValueChange={(v) => setF({ ...f, tipo_evento: v })} disabled={esVencimiento}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{TIPOS_EVENTO.filter((t) => esVencimiento || t !== "Vencimiento Trámite").map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                <SelectContent>{[...TIPOS_EVENTO, ...(f.tipo_evento === TIPO_OUTLOOK ? [TIPO_OUTLOOK] : [])].filter((t) => esVencimiento || t !== "Vencimiento Trámite").map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5"><Label>Fecha y hora</Label><Input type="datetime-local" value={f.fecha_inicio ?? ""} onChange={(e) => setF({ ...f, fecha_inicio: e.target.value })} disabled={esVencimiento} /></div>
