@@ -49,7 +49,8 @@ export function fechaOutlookAISO(fecha: { dateTime: string; timeZone: string } |
   if (!fecha?.dateTime) return null;
   const m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/.exec(fecha.dateTime);
   if (!m) return null;
-  const local = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], m[6] ? +m[6] : 0);
+  const [, anio, mes, dia, hora, minuto, segundo] = m;
+  const local = Date.UTC(Number(anio), Number(mes) - 1, Number(dia), Number(hora), Number(minuto), segundo ? Number(segundo) : 0);
   if ((ZONAS[fecha.timeZone.toLowerCase()] ?? MADRID) === "UTC") return new Date(local).toISOString();
   // Con la hora normal (+1) la marca UTC sería esta; si cae en verano, son dos horas.
   return new Date(local - (enHorarioDeVerano(local - HORA) ? 2 * HORA : HORA)).toISOString();
