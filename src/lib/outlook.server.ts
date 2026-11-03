@@ -41,7 +41,7 @@ export async function listarEventosOutlook(desde: Date, hasta: Date): Promise<Ev
       endDateTime: hasta.toISOString(),
       $orderby: "start/dateTime",
       $top: 100,
-      $select: "id,subject,start,end,allDay,locations,bodyPreview",
+      $select: "id,subject,start,end,locations,bodyPreview",
     },
   });
   return respuesta.value ?? [];

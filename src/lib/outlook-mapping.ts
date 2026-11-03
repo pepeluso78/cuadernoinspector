@@ -5,7 +5,6 @@ import { TIPO_OUTLOOK } from "./constants";
 export type EventoOutlook = {
   id: string;
   subject?: string | null;
-  allDay?: boolean;
   start: { dateTime: string; timeZone: string };
   end?: { dateTime: string; timeZone: string } | null;
   locations?: { displayName?: string | null }[] | null;
