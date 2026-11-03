@@ -11,4 +11,6 @@ export const ESTADOS_TRAMITE = ["Pendiente", "En estudio", "En redacción", "Res
 export const ESTADOS_CERRADOS = ["Respondido / Elevado", "Finalizado"];
 export const esTramiteCerrado = (estado: string | null) => !!estado && ESTADOS_CERRADOS.includes(estado);
 export const TIPOS_EVENTO = ["Visita a Centro", "Reunión Inspección", "Tarea Despacho", "Actividades de Formación", "Tareas de Coordinación", "Vencimiento Trámite"];
+// Tipo que solo aparece en los eventos importados del calendario de Outlook.
+export const TIPO_OUTLOOK = "Compromiso Outlook";
 export const CATEGORIAS_NOTA = ["Incidencia", "Conversación", "Documento", "Otros"];
