@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           cargo_visita: string
           centro_id: string | null
+          centro_texto: string
           created_at: string | null
           descripcion_visita: string
           fecha_fin: string | null
@@ -38,6 +39,7 @@ export type Database = {
         Insert: {
           cargo_visita?: string
           centro_id?: string | null
+          centro_texto?: string
           created_at?: string | null
           descripcion_visita?: string
           fecha_fin?: string | null
@@ -58,6 +60,7 @@ export type Database = {
         Update: {
           cargo_visita?: string
           centro_id?: string | null
+          centro_texto?: string
           created_at?: string | null
           descripcion_visita?: string
           fecha_fin?: string | null
