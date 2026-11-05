@@ -19,4 +19,13 @@ describe("Impresión del calendario", () => {
     const eventos = [evento("ayer", "2026-10-22T23:59:00"), evento("hoy", "2026-10-23T00:00:00"), evento("realizado", "2026-10-24T09:00:00", true), evento("futuro", "2028-01-01T12:00:00")];
     expect(entradasAgenda(eventos, [], [], "agenda", new Date(2020, 0, 1), hoy).map((e) => e.id)).toEqual(["hoy", "futuro"]);
   });
+  it("imprime el centro escrito a mano cuando no está en la lista del inspector", () => {
+    const eventos = [
+      { ...evento("visita-ajena", "2026-10-23T09:00:00"), tipo_evento: "Visita a Centro", centro_texto: "CPA Virgen de la Cabella" },
+      { ...evento("visita-lista", "2026-10-23T11:00:00"), tipo_evento: "Visita a Centro", centro_id: "c1", centro_texto: "No debe aparecer" },
+    ];
+    const entradas = entradasAgenda(eventos, [], [{ id: "c1", nombre: "IES Abad Donas" }], "mes", hoy, hoy);
+    expect(entradas.find((e) => e.id === "visita-ajena")?.centro).toBe("CPA Virgen de la Cabella");
+    expect(entradas.find((e) => e.id === "visita-lista")?.centro).toBe("IES Abad Donas");
+  });
 });
