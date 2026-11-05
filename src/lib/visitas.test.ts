@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { esVisita, nombreArchivoResena, resenaCompleta } from "./visitas";
+import { codigoEnArchivo, esVisita, nombreArchivoResena, resenaCompleta } from "./visitas";
 
 describe("Registro de visitas", () => {
   it("comparte las visitas del calendario y excluye otros eventos", () => {
@@ -14,5 +14,11 @@ describe("Registro de visitas", () => {
   it("nombra el PDF con la ñ y el formato Reseña AAAMMDD-código", () => {
     expect(nombreArchivoResena("2026-10-23T12:00:00Z", "02007321")).toBe("Reseña 20261023-02007321.pdf");
     expect(nombreArchivoResena("2026-10-23T23:30:00Z", "02007321")).toBe("Reseña 20261024-02007321.pdf");
+  });
+  it("usa el código del centro y, si no lo tiene, su nombre en el nombre del PDF", () => {
+    expect(codigoEnArchivo("02007321", "IES Abad Donas")).toBe("02007321");
+    expect(codigoEnArchivo("", "CPA Virgen de la Cabella")).toBe("CPA-Virgen-de-la-Cabella");
+    expect(codigoEnArchivo("", "Escuela de Música Moderna")).toBe("Escuela-de-Musica-Moderna");
+    expect(codigoEnArchivo("", "  ")).toBe("SIN-CODIGO");
   });
 });

@@ -68,8 +68,6 @@ function AgendaPage() {
   for (let d = ini; d <= fin; d = addDays(d, 1)) dias.push(d);
   const delDia = (d: Date) => eventos.filter((e) => isSameDay(new Date(e.fecha_inicio), d));
   const mover = (n: number) => setRef(vista === "semana" ? addWeeks(ref, n) : addMonths(ref, n));
-  const nombreCentro = (id: string | null) => centros.find((c) => c.id === id)?.nombre;
-  const nombreCentro = (id: string | null) => centros.find((c) => c.id === id)?.nombre;
   const pendientes = entradasAgenda(eventos, [], centros, "agenda", ref);
   const datosListos = [eventosEstado, centrosEstado, guardiasEstado].every((q) => q.isSuccess && !q.isFetching);
   async function sincronizarConOutlook() {
