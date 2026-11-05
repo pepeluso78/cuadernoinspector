@@ -1,9 +1,10 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import type { Centro, Evento } from "@/lib/queries";
-import { nombreArchivoResena } from "@/lib/visitas";
+import type { Evento } from "@/lib/queries";
+import type { FichaCentro } from "@/lib/centro-evento";
+import { codigoEnArchivo, nombreArchivoResena } from "@/lib/visitas";
 import logoAsset from "@/assets/jccm-logo.asset.json";
 
-export async function crearResenaPDF(visita: Evento, centro: Centro, logoBytes?: ArrayBuffer) {
+export async function crearResenaPDF(visita: Evento, centro: FichaCentro, logoBytes?: ArrayBuffer) {
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.TimesRoman);
   const bold = await doc.embedFont(StandardFonts.TimesRomanBold);
@@ -62,7 +63,9 @@ export async function crearResenaPDF(visita: Evento, centro: Centro, logoBytes?:
   }
   const fecha = new Date(visita.fecha_inicio).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Madrid" });
   header();
-  box("Centro y fecha de visita", `${centro.nombre} · Código: ${centro.codigo_centro}\nMunicipio: ${centro.localidad ?? ""}\nFecha: ${fecha}`);
+  box("Centro y fecha de visita", centro.externo
+    ? `${centro.nombre}\nFecha: ${fecha}`
+    : `${centro.nombre} · Código: ${centro.codigo_centro}\nMunicipio: ${centro.localidad}\nFecha: ${fecha}`);
   box("Inspector que realiza la visita", visita.inspector_visita);
   box("Objetivo de la visita", visita.titulo);
   box("Breve Descripción de la visita", visita.descripcion_visita);
@@ -77,11 +80,11 @@ export async function crearResenaPDF(visita: Evento, centro: Centro, logoBytes?:
   return doc.save();
 }
 
-export async function descargarResenaPDF(visita: Evento, centro: Centro) {
+export async function descargarResenaPDF(visita: Evento, centro: FichaCentro) {
   const bytes = await crearResenaPDF(visita, centro);
   const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: "application/pdf" }));
   const link = document.createElement("a");
-  link.href = url; link.download = nombreArchivoResena(visita.fecha_inicio, centro.codigo_centro);
+  link.href = url; link.download = nombreArchivoResena(visita.fecha_inicio, codigoEnArchivo(centro.codigo_centro, centro.nombre));
   document.body.appendChild(link); link.click(); link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
