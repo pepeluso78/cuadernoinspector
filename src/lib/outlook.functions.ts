@@ -6,6 +6,7 @@ import {
   filaDesdeEventoOutlook,
   type FilaAgendaDesdeOutlook,
 } from "./outlook-mapping";
+import { puedeUsarOutlookCompartido } from "./outlook-acceso";
 
 const LIMITE_ENVIOS = 50;
 
@@ -25,7 +26,11 @@ export const sincronizarOutlook = createServerFn({ method: "POST" })
     }
     const desdeISO = desde.toISOString();
     const hastaISO = hasta.toISOString();
-    const { supabase, userId } = context;
+    const { supabase, userId, claims } = context;
+    const correo = String((claims as { email?: string })?.email ?? "").toLowerCase();
+    if (!puedeUsarOutlookCompartido(correo)) {
+      throw new Error("Tu cuenta todavía no tiene un calendario de Outlook propio conectado");
+    }
     const { listarEventosOutlook, crearEventoOutlook } = await import("./outlook.server");
 
     const { data: actuales, error: errorLista } = await supabase
