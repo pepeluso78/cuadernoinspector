@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { puedeUsarOutlookCompartido } from "@/lib/outlook-acceso";
 import { toast } from "sonner";
 import {
   addDays, addMonths, addWeeks, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, startOfMonth, startOfWeek,
@@ -56,6 +57,9 @@ function AgendaPage() {
   const [sincronizando, setSincronizando] = useState(false);
   const qc = useQueryClient();
   const sincronizar = useServerFn(sincronizarOutlook);
+  const [correoUsuario, setCorreoUsuario] = useState<string | null>(null);
+  useEffect(() => { supabase.auth.getUser().then(({ data }) => setCorreoUsuario(data.user?.email ?? null)); }, []);
+  const outlookDisponible = puedeUsarOutlookCompartido(correoUsuario);
 
   const ini = vista === "mes" ? startOfWeek(startOfMonth(ref), { weekStartsOn: 1 }) : startOfWeek(ref, { weekStartsOn: 1 });
   const fin = vista === "mes" ? endOfWeek(endOfMonth(ref), { weekStartsOn: 1 }) : endOfWeek(ref, { weekStartsOn: 1 });
@@ -101,10 +105,12 @@ function AgendaPage() {
           {imprimiendo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
           {vista === "agenda" ? "PDF de pendientes" : vista === "semana" ? "PDF de la semana" : "PDF del mes"}
         </Button>
-        <Button variant="outline" onClick={sincronizarConOutlook} disabled={sincronizando}>
-          {sincronizando ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          Sincronizar con Outlook
-        </Button>
+        {outlookDisponible && (
+          <Button variant="outline" onClick={sincronizarConOutlook} disabled={sincronizando}>
+            {sincronizando ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            Sincronizar con Outlook
+          </Button>
+        )}
         <Button onClick={() => setEdit({ tipo_evento: "Visita a Centro", fecha_inicio: format(new Date(), "yyyy-MM-dd'T'09:00"), titulo: "" })}><Plus className="h-4 w-4" /> Nuevo evento</Button>
       </PageHeader>
       <div className="mb-4 flex flex-wrap items-center gap-3">
