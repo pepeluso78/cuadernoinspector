@@ -1,0 +1,2 @@
+ALTER TABLE public.agenda_eventos ADD COLUMN IF NOT EXISTS centro_texto text NOT NULL DEFAULT '';
+COMMENT ON COLUMN public.agenda_eventos.centro_texto IS 'Nombre escrito a mano del centro cuando no está en la lista del inspector (centro_id a null).';

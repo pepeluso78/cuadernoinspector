@@ -6,6 +6,7 @@ import { Check, FileDown, Save, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useConfiguracion, nombreInspector } from "@/lib/configuracion";
 import { resenaCompleta } from "@/lib/visitas";
+import { OTRO_CENTRO, fichaCentroEvento } from "@/lib/centro-evento";
 import { descargarResenaPDF } from "@/lib/resena-pdf";
 import type { Centro, Evento } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
@@ -20,13 +21,14 @@ export function EditorVisita({ visita, centros, resena = false, onClose }: { vis
   const config = useConfiguracion();
   const [f, setF] = useState(() => ({ ...visita, fecha_inicio: format(new Date(visita.fecha_inicio ?? new Date()), "yyyy-MM-dd'T'HH:mm"), inspector_visita: visita.inspector_visita ?? nombreInspector(config), cargo_visita: visita.cargo_visita ?? config.cargo, provincia_visita: visita.provincia_visita ?? config.provincia, descripcion_visita: visita.descripcion_visita ?? "", problemas_visita: visita.problemas_visita ?? "", recomendaciones_visita: visita.recomendaciones_visita ?? "" }));
   const [busy, setBusy] = useState(false);
-  const centro = centros.find((c) => c.id === f.centro_id);
+  const [otro, setOtro] = useState(() => !visita.centro_id && !!visita.centro_texto?.trim());
+  const centro = fichaCentroEvento(f, centros);
   async function guardar(pdf = false) {
     if (!f.titulo?.trim() || !f.fecha_inicio || !centro || !f.inspector_visita.trim()) { toast.error("Indica centro, objetivo, fecha e inspector"); return; }
     if (pdf && !resenaCompleta(f)) { toast.error("Completa los tres apartados de la reseña"); return; }
     setBusy(true);
     try {
-      const payload = { titulo: f.titulo.trim(), tipo_evento: "Visita a Centro", centro_id: centro.id, fecha_inicio: new Date(f.fecha_inicio).toISOString(), realizada: !!f.realizada, inspector_visita: f.inspector_visita.trim(), cargo_visita: f.cargo_visita, provincia_visita: f.provincia_visita, descripcion_visita: f.descripcion_visita, problemas_visita: f.problemas_visita, recomendaciones_visita: f.recomendaciones_visita };
+      const payload = { titulo: f.titulo.trim(), tipo_evento: "Visita a Centro", centro_id: f.centro_id ?? null, centro_texto: centro?.externo ? centro.nombre : "", fecha_inicio: new Date(f.fecha_inicio).toISOString(), realizada: !!f.realizada, inspector_visita: f.inspector_visita.trim(), cargo_visita: f.cargo_visita, provincia_visita: f.provincia_visita, descripcion_visita: f.descripcion_visita, problemas_visita: f.problemas_visita, recomendaciones_visita: f.recomendaciones_visita };
       const result = f.id ? await supabase.from("agenda_eventos").update(payload).eq("id", f.id).select().single() : await supabase.from("agenda_eventos").insert(payload).select().single();
       if (result.error) throw result.error;
       await qc.invalidateQueries({ queryKey: ["eventos"] });
@@ -48,8 +50,8 @@ export function EditorVisita({ visita, centros, resena = false, onClose }: { vis
     <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
       <DialogHeader><DialogTitle>{resena ? "Reseña de visita" : f.id ? "Ficha de visita" : "Nueva visita"}</DialogTitle></DialogHeader>
       <fieldset disabled={busy} className="space-y-4">
-        <div className="space-y-1.5"><Label htmlFor="visita-centro">Centro</Label><Select value={f.centro_id ?? ""} onValueChange={(value) => setF({ ...f, centro_id: value })}><SelectTrigger id="visita-centro"><SelectValue placeholder="Seleccionar centro" /></SelectTrigger><SelectContent>{centros.map((c) => <SelectItem value={c.id} key={c.id}>{c.nombre}</SelectItem>)}</SelectContent></Select></div>
-        {centro && <p className="text-xs text-muted-foreground">{centro.codigo_centro} · {centro.localidad}</p>}
+        <div className="space-y-1.5"><Label htmlFor="visita-centro">Centro</Label><Select value={f.centro_id ?? (otro ? OTRO_CENTRO : "")} onValueChange={(value) => { if (value === OTRO_CENTRO) { setOtro(true); setF({ ...f, centro_id: null, centro_texto: f.centro_texto ?? "" }); return; } setOtro(false); setF({ ...f, centro_id: value, centro_texto: "" }); }}><SelectTrigger id="visita-centro"><SelectValue placeholder="Seleccionar centro" /></SelectTrigger><SelectContent><SelectItem value={OTRO_CENTRO} key={OTRO_CENTRO}>Otro centro (escribir)</SelectItem>{centros.map((c) => <SelectItem value={c.id} key={c.id}>{c.nombre}</SelectItem>)}</SelectContent></Select>{otro && !f.centro_id && <Input id="visita-centro-texto" placeholder="Nombre del centro" value={f.centro_texto ?? ""} onChange={(e) => setF({ ...f, centro_texto: e.target.value })} />}</div>
+        {centro && !centro.externo && <p className="text-xs text-muted-foreground">{centro.codigo_centro} · {centro.localidad}</p>}
         <div className="grid gap-4 sm:grid-cols-2"><div className="space-y-1.5"><Label htmlFor="visita-fecha">Fecha y hora de visita</Label><Input id="visita-fecha" type="datetime-local" value={f.fecha_inicio} onChange={(e) => setF({ ...f, fecha_inicio: e.target.value })} /></div><div className="space-y-1.5"><Label htmlFor="visita-inspector">Inspector</Label><Input id="visita-inspector" value={f.inspector_visita} onChange={(e) => setF({ ...f, inspector_visita: e.target.value })} /></div></div>
         <div className="space-y-1.5"><Label htmlFor="visita-objetivo">Objetivo de la visita</Label><Input id="visita-objetivo" value={f.titulo ?? ""} onChange={(e) => setF({ ...f, titulo: e.target.value })} /></div>
         <Button variant={f.realizada ? "default" : "outline"} onClick={() => setF({ ...f, realizada: !f.realizada })}><Check className="h-4 w-4" />{f.realizada ? "Realizada" : "Marcar como realizada"}</Button>
