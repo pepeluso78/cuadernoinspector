@@ -5,7 +5,8 @@ export const OTRO_CENTRO = "__otro";
 /** Opción del desplegable para un evento sin centro. */
 export const SIN_CENTRO = "__none";
 
-type EventoCentro = Pick<Evento, "centro_id" | "centro_texto">;
+/** Los dos campos son opcionales porque los formularios los rellenan poco a poco. */
+type EventoCentro = Partial<Pick<Evento, "centro_id" | "centro_texto">>;
 type ListaCentros = Pick<Centro, "id" | "nombre" | "codigo_centro" | "localidad">[];
 
 export type FichaCentro = {
