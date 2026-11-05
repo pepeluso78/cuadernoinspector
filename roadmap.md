@@ -12,3 +12,4 @@
 # Hecho (histórico)
 - Configuración personal, registro de visitas con reseña y PDF, adjuntos de correo, partes de ausencias, festivos 2026/2027, guardias con PDF, impresión de agenda, configuración por usuario, recuperación de contraseña.
 - Ficha de centro con su propio listado de visitas (todas/realizadas/previstas) y acceso directo a la reseña de cada una.
+- [ ] Outlook individual por usuario: bloqueado hasta registrar una aplicación de Microsoft (Entra) en los ajustes del espacio de trabajo.
