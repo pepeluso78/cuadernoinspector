@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { centrosQuery, eventosQuery, guardiasQuery, type Evento } from "@/lib/queries";
 import { TIPOS_EVENTO, TIPO_OUTLOOK } from "@/lib/constants";
+import { OTRO_CENTRO, SIN_CENTRO, centroTextoGuardado } from "@/lib/centro-evento";
 import { FESTIVOS, toISODate } from "@/lib/plazos";
 import { cn } from "@/lib/utils";
 import { useConfiguracion, nombreInspector } from "@/lib/configuracion";
@@ -40,7 +41,7 @@ const color: Record<string, string> = {
   "Tareas de Coordinación": "bg-accent text-accent-foreground ring-1 ring-border",
   [TIPO_OUTLOOK]: "bg-muted text-muted-foreground ring-1 ring-border",
 };
-const SIN = "__none";
+const SIN = SIN_CENTRO;
 
 function AgendaPage() {
   const eventosEstado = useQuery(eventosQuery);
@@ -67,6 +68,7 @@ function AgendaPage() {
   for (let d = ini; d <= fin; d = addDays(d, 1)) dias.push(d);
   const delDia = (d: Date) => eventos.filter((e) => isSameDay(new Date(e.fecha_inicio), d));
   const mover = (n: number) => setRef(vista === "semana" ? addWeeks(ref, n) : addMonths(ref, n));
+  const nombreCentro = (id: string | null) => centros.find((c) => c.id === id)?.nombre;
   const nombreCentro = (id: string | null) => centros.find((c) => c.id === id)?.nombre;
   const pendientes = entradasAgenda(eventos, [], centros, "agenda", ref);
   const datosListos = [eventosEstado, centrosEstado, guardiasEstado].every((q) => q.isSuccess && !q.isFetching);
@@ -191,17 +193,20 @@ function EditorEvento({ ev, onClose }: { ev: Partial<Evento> | null; onClose: ()
   const { data: centros = [] } = useQuery(centrosQuery);
   const [f, setF] = useState<Partial<Evento>>({});
   const [lastEv, setLastEv] = useState<Partial<Evento> | null>(null);
+  const [otro, setOtro] = useState(false);
   if (ev !== lastEv) {
     setLastEv(ev);
+    setOtro(!!ev && !ev.centro_id && !!ev.centro_texto?.trim());
     if (ev) { const fi = ev.fecha_inicio ?? ""; setF({ ...ev, fecha_inicio: fi.includes("Z") || fi.includes("+") ? format(new Date(fi), "yyyy-MM-dd'T'HH:mm") : fi }); }
   }
   const esVencimiento = !!f.tramite_id;
 
   async function guardar() {
     if (!f.titulo?.trim() || !f.fecha_inicio) { toast.error("Título y fecha obligatorios"); return; }
-    if (f.tipo_evento === "Visita a Centro" && !f.centro_id) { toast.error("Selecciona el centro de la visita"); return; }
+    const centroEscrito = otro ? centroTextoGuardado(f) : "";
+    if (f.tipo_evento === "Visita a Centro" && !f.centro_id && !centroEscrito) { toast.error("Indica el centro de la visita"); return; }
     const payload = {
-      titulo: f.titulo, tipo_evento: f.tipo_evento ?? "Visita a Centro", centro_id: f.centro_id ?? null,
+      titulo: f.titulo, tipo_evento: f.tipo_evento ?? "Visita a Centro", centro_id: f.centro_id ?? null, centro_texto: centroEscrito,
       fecha_inicio: new Date(f.fecha_inicio).toISOString(), realizada: !!f.realizada, notas_visita: f.notas_visita ?? null,
       ...(!f.id ? { inspector_visita: nombreInspector(config), cargo_visita: config.cargo, provincia_visita: config.provincia } : {}),
     };
@@ -236,10 +241,15 @@ function EditorEvento({ ev, onClose }: { ev: Partial<Evento> | null; onClose: ()
             <div className="space-y-1.5"><Label>Fecha y hora</Label><Input type="datetime-local" value={f.fecha_inicio ?? ""} onChange={(e) => setF({ ...f, fecha_inicio: e.target.value })} disabled={esVencimiento} /></div>
           </div>
           <div className="space-y-1.5"><Label>Centro</Label>
-            <Select value={f.centro_id ?? SIN} onValueChange={(v) => setF({ ...f, centro_id: v === SIN ? null : v })} disabled={esVencimiento}>
+            <Select value={f.centro_id ?? (otro ? OTRO_CENTRO : SIN)} disabled={esVencimiento} onValueChange={(v) => {
+              if (v === OTRO_CENTRO) { setOtro(true); setF({ ...f, centro_id: null, centro_texto: f.centro_texto ?? "" }); return; }
+              setOtro(false);
+              setF({ ...f, centro_id: v === SIN ? null : v, centro_texto: "" });
+            }}>
               <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent><SelectItem value={SIN}>Sin centro</SelectItem>{centros.map((c) => <SelectItem key={c.id} value={c.id}>{c.nombre}</SelectItem>)}</SelectContent>
+              <SelectContent><SelectItem value={SIN}>Sin centro</SelectItem><SelectItem value={OTRO_CENTRO}>Otro centro (escribir)</SelectItem>{centros.map((c) => <SelectItem key={c.id} value={c.id}>{c.nombre}</SelectItem>)}</SelectContent>
             </Select>
+            {otro && !f.centro_id && <Input placeholder="Nombre del centro" value={f.centro_texto ?? ""} onChange={(e) => setF({ ...f, centro_texto: e.target.value })} />}
           </div>
           {!esVencimiento && <div className="space-y-1.5"><Label>Notas de la visita / tarea</Label><Textarea rows={3} value={f.notas_visita ?? ""} onChange={(e) => setF({ ...f, notas_visita: e.target.value })} /></div>}
           {!esVencimiento && (
