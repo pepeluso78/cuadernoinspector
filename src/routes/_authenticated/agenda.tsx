@@ -215,6 +215,10 @@ function AgendaPage() {
                   <button type="button" onClick={() => setSemanaGuardia(startOfWeek(d, { weekStartsOn: 1 }))} title="Cambiar o quitar la guardia de esta semana"
                     className="mb-1 block w-full truncate rounded bg-crimson px-1.5 py-0.5 text-left text-[10px] font-semibold text-crimson-foreground">Día de guardia</button>
                 )}
+                {esTrabajoDistancia(d, diaGuardia) && !esDiaGuardia(d, diaGuardia, cambiosGuardia) && (
+                  <button type="button" onClick={() => setSemanaGuardia(startOfWeek(d, { weekStartsOn: 1 }))}
+                    className="mb-1 block w-full truncate rounded px-1.5 py-0.5 text-left text-[10px] text-muted-foreground ring-1 ring-border">Guardia cambiada esta semana</button>
+                )}
                 <div className="space-y-1">
                   {delDia(d).map((e) => (
                     <button key={e.id} type="button" onClick={() => setEdit(e)} className={cn("block w-full truncate rounded px-1.5 py-0.5 text-left text-[11px]", e.realizada && e.tipo_evento === "Vencimiento Trámite" ? "bg-ok-soft text-ok ring-1 ring-ok/40" : (color[e.tipo_evento] ?? color["Tarea Despacho"]), e.realizada && "opacity-60 line-through")}>
