@@ -22,6 +22,7 @@ import { TIPOS_EVENTO, TIPO_OUTLOOK } from "@/lib/constants";
 import { OTRO_CENTRO, SIN_CENTRO, centroTextoGuardado } from "@/lib/centro-evento";
 import { FESTIVOS, toISODate } from "@/lib/plazos";
 import { cn } from "@/lib/utils";
+import { esTrabajoDistancia } from "@/lib/trabajo-distancia";
 import { useConfiguracion, nombreInspector } from "@/lib/configuracion";
 import { useServerFn } from "@tanstack/react-start";
 import { entradasAgenda, periodoAgenda, type VistaAgenda } from "@/lib/agenda-export";
@@ -61,6 +62,20 @@ function AgendaPage() {
   const [correoUsuario, setCorreoUsuario] = useState<string | null>(null);
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setCorreoUsuario(data.user?.email ?? null)); }, []);
   const outlookDisponible = puedeUsarOutlookCompartido(correoUsuario);
+  const { data: diaDistancia = null } = useQuery({ queryKey: ["trabajo_distancia"], staleTime: 30 * 60_000, queryFn: async () => {
+    const { data, error } = await supabase.from("trabajo_distancia").select("dia_semana").maybeSingle();
+    if (error) throw error;
+    return data?.dia_semana ?? null;
+  } });
+  async function cambiarDiaDistancia(v: string) {
+    const dia = v === "ninguno" ? null : Number(v);
+    const { data: u } = await supabase.auth.getUser();
+    if (!u.user) return;
+    const { error } = await supabase.from("trabajo_distancia").upsert({ user_id: u.user.id, dia_semana: dia, updated_at: new Date().toISOString() });
+    if (error) { toast.error(error.message); return; }
+    qc.invalidateQueries({ queryKey: ["trabajo_distancia"] });
+    toast.success(dia ? "Día de Trabajo a Distancia guardado" : "Trabajo a Distancia desactivado");
+  }
 
   const ini = vista === "mes" ? startOfWeek(startOfMonth(ref), { weekStartsOn: 1 }) : startOfWeek(ref, { weekStartsOn: 1 });
   const fin = vista === "mes" ? endOfWeek(endOfMonth(ref), { weekStartsOn: 1 }) : endOfWeek(ref, { weekStartsOn: 1 });
@@ -127,6 +142,16 @@ function AgendaPage() {
             </span>
           </div>
         )}
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-muted-foreground">Trabajo a Distancia:</span>
+          <Select value={diaDistancia ? String(diaDistancia) : "ninguno"} onValueChange={cambiarDiaDistancia}>
+            <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ninguno">Ninguno</SelectItem>
+              {["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"].map((n, i) => <SelectItem key={n} value={String(i + 1)}>{n}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
         <div className="ml-auto flex flex-wrap gap-3 text-xs">
           {TIPOS_EVENTO.map((t) => <span key={t} className="flex items-center gap-1"><span className={cn("h-2.5 w-2.5 rounded-sm", color[t])} />{t}</span>)}
           <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-muted ring-1 ring-border" />Desde Outlook</span>
@@ -162,6 +187,7 @@ function AgendaPage() {
                 onDoubleClick={() => setEdit({ tipo_evento: "Visita a Centro", fecha_inicio: format(d, "yyyy-MM-dd'T'09:00"), titulo: "" })}>
                 <p className={cn("mb-1 font-mono text-xs", festivo && "font-semibold text-crimson", isSameDay(d, new Date()) && "inline-block rounded bg-crimson px-1.5 text-crimson-foreground")}>{format(d, "d")}</p>
                 {festivo && <p className="mb-1 truncate text-[10px] font-medium text-crimson" title={festivo}>{festivo}</p>}
+                {esTrabajoDistancia(d, diaDistancia) && <p className="mb-1 truncate rounded bg-ok-soft px-1.5 py-0.5 text-[10px] font-semibold text-ok ring-1 ring-ok/40">Trabajo a Distancia</p>}
                 <div className="space-y-1">
                   {delDia(d).map((e) => (
                     <button key={e.id} type="button" onClick={() => setEdit(e)} className={cn("block w-full truncate rounded px-1.5 py-0.5 text-left text-[11px]", e.realizada && e.tipo_evento === "Vencimiento Trámite" ? "bg-ok-soft text-ok ring-1 ring-ok/40" : (color[e.tipo_evento] ?? color["Tarea Despacho"]), e.realizada && "opacity-60 line-through")}>
