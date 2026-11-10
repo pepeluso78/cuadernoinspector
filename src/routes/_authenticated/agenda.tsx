@@ -77,7 +77,7 @@ function AgendaPage() {
     const dia = v === "ninguno" ? null : Number(v);
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
-    const { error } = await supabase.from("trabajo_distancia").upsert({ user_id: u.user.id, [campo]: dia, updated_at: new Date().toISOString() });
+    const { error } = await supabase.from("trabajo_distancia").upsert({ user_id: u.user.id, ...(campo === "dia_guardia" ? { dia_guardia: dia } : { dia_semana: dia }), updated_at: new Date().toISOString() });
     if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["trabajo_distancia"] });
     toast.success(campo === "dia_guardia" ? (dia ? "Día de guardia guardado" : "Guardia semanal desactivada") : (dia ? "Día de Trabajo a Distancia guardado" : "Trabajo a Distancia desactivado"));
