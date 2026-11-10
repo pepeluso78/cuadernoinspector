@@ -5,12 +5,7 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
-# Variables de conexión a Supabase (se inyectan al compilar)
-ARG VITE_SUPABASE_URL
-ARG VITE_SUPABASE_PUBLISHABLE_KEY
-ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
-ENV VITE_SUPABASE_PUBLISHABLE_KEY=$VITE_SUPABASE_PUBLISHABLE_KEY
-
+# Vite leerá automáticamente tu archivo .env al hacer el build
 RUN npm run build
 
 # Etapa 2: Servidor web ligero Nginx
