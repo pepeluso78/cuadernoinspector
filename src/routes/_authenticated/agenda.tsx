@@ -22,7 +22,7 @@ import { TIPOS_EVENTO, TIPO_OUTLOOK } from "@/lib/constants";
 import { OTRO_CENTRO, SIN_CENTRO, centroTextoGuardado } from "@/lib/centro-evento";
 import { FESTIVOS, toISODate } from "@/lib/plazos";
 import { cn } from "@/lib/utils";
-import { esTrabajoDistancia } from "@/lib/trabajo-distancia";
+import { esDiaGuardia, esTrabajoDistancia } from "@/lib/trabajo-distancia";
 import { useConfiguracion, nombreInspector } from "@/lib/configuracion";
 import { useServerFn } from "@tanstack/react-start";
 import { entradasAgenda, periodoAgenda, type VistaAgenda } from "@/lib/agenda-export";
@@ -62,19 +62,34 @@ function AgendaPage() {
   const [correoUsuario, setCorreoUsuario] = useState<string | null>(null);
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setCorreoUsuario(data.user?.email ?? null)); }, []);
   const outlookDisponible = puedeUsarOutlookCompartido(correoUsuario);
-  const { data: diaDistancia = null } = useQuery({ queryKey: ["trabajo_distancia"], staleTime: 30 * 60_000, queryFn: async () => {
-    const { data, error } = await supabase.from("trabajo_distancia").select("dia_semana").maybeSingle();
+  const { data: semanal } = useQuery({ queryKey: ["trabajo_distancia"], staleTime: 30 * 60_000, queryFn: async () => {
+    const { data, error } = await supabase.from("trabajo_distancia").select("dia_semana,dia_guardia").maybeSingle();
     if (error) throw error;
-    return data?.dia_semana ?? null;
+    const { data: cs, error: e2 } = await supabase.from("guardia_semanas").select("semana,fecha");
+    if (e2) throw e2;
+    return { distancia: data?.dia_semana ?? null, guardia: data?.dia_guardia ?? null, cambios: Object.fromEntries((cs ?? []).map((c) => [c.semana, c.fecha])) as Record<string, string | null> };
   } });
-  async function cambiarDiaDistancia(v: string) {
+  const diaDistancia = semanal?.distancia ?? null;
+  const diaGuardia = semanal?.guardia ?? null;
+  const cambiosGuardia = semanal?.cambios ?? {};
+  const [semanaGuardia, setSemanaGuardia] = useState<Date | null>(null);
+  async function cambiarDiaSemanal(campo: "dia_semana" | "dia_guardia", v: string) {
     const dia = v === "ninguno" ? null : Number(v);
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
-    const { error } = await supabase.from("trabajo_distancia").upsert({ user_id: u.user.id, dia_semana: dia, updated_at: new Date().toISOString() });
+    const { error } = await supabase.from("trabajo_distancia").upsert({ user_id: u.user.id, ...(campo === "dia_guardia" ? { dia_guardia: dia } : { dia_semana: dia }), updated_at: new Date().toISOString() });
     if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["trabajo_distancia"] });
-    toast.success(dia ? "Día de Trabajo a Distancia guardado" : "Trabajo a Distancia desactivado");
+    toast.success(campo === "dia_guardia" ? (dia ? "Día de guardia guardado" : "Guardia semanal desactivada") : (dia ? "Día de Trabajo a Distancia guardado" : "Trabajo a Distancia desactivado"));
+  }
+  async function cambiarGuardiaSemana(lunes: Date, valor: string | null | "habitual") {
+    const semana = toISODate(lunes);
+    const { error } = valor === "habitual"
+      ? await supabase.from("guardia_semanas").delete().eq("semana", semana)
+      : await supabase.from("guardia_semanas").upsert({ semana, fecha: valor });
+    if (error) { toast.error(error.message); return; }
+    qc.invalidateQueries({ queryKey: ["trabajo_distancia"] });
+    setSemanaGuardia(null);
   }
 
   const ini = vista === "mes" ? startOfWeek(startOfMonth(ref), { weekStartsOn: 1 }) : startOfWeek(ref, { weekStartsOn: 1 });
@@ -144,7 +159,15 @@ function AgendaPage() {
         )}
         <div className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground">Trabajo a Distancia:</span>
-          <Select value={diaDistancia ? String(diaDistancia) : "ninguno"} onValueChange={cambiarDiaDistancia}>
+          <Select value={diaDistancia ? String(diaDistancia) : "ninguno"} onValueChange={(v) => cambiarDiaSemanal("dia_semana", v)}>
+            <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ninguno">Ninguno</SelectItem>
+              {["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"].map((n, i) => <SelectItem key={n} value={String(i + 1)}>{n}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <span className="ml-2 text-muted-foreground">Guardia:</span>
+          <Select value={diaGuardia ? String(diaGuardia) : "ninguno"} onValueChange={(v) => cambiarDiaSemanal("dia_guardia", v)}>
             <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="ninguno">Ninguno</SelectItem>
@@ -188,6 +211,14 @@ function AgendaPage() {
                 <p className={cn("mb-1 font-mono text-xs", festivo && "font-semibold text-crimson", isSameDay(d, new Date()) && "inline-block rounded bg-crimson px-1.5 text-crimson-foreground")}>{format(d, "d")}</p>
                 {festivo && <p className="mb-1 truncate text-[10px] font-medium text-crimson" title={festivo}>{festivo}</p>}
                 {esTrabajoDistancia(d, diaDistancia) && <p className="mb-1 truncate rounded bg-ok-soft px-1.5 py-0.5 text-[10px] font-semibold text-ok ring-1 ring-ok/40">Trabajo a Distancia</p>}
+                {esDiaGuardia(d, diaGuardia, cambiosGuardia) && (
+                  <button type="button" onClick={() => setSemanaGuardia(startOfWeek(d, { weekStartsOn: 1 }))} title="Cambiar o quitar la guardia de esta semana"
+                    className="mb-1 block w-full truncate rounded bg-crimson px-1.5 py-0.5 text-left text-[10px] font-semibold text-crimson-foreground">Día de guardia</button>
+                )}
+                {esTrabajoDistancia(d, diaGuardia) && !esDiaGuardia(d, diaGuardia, cambiosGuardia) && (
+                  <button type="button" onClick={() => setSemanaGuardia(startOfWeek(d, { weekStartsOn: 1 }))}
+                    className="mb-1 block w-full truncate rounded px-1.5 py-0.5 text-left text-[10px] text-muted-foreground ring-1 ring-border">Guardia cambiada esta semana</button>
+                )}
                 <div className="space-y-1">
                   {delDia(d).map((e) => (
                     <button key={e.id} type="button" onClick={() => setEdit(e)} className={cn("block w-full truncate rounded px-1.5 py-0.5 text-left text-[11px]", e.realizada && e.tipo_evento === "Vencimiento Trámite" ? "bg-ok-soft text-ok ring-1 ring-ok/40" : (color[e.tipo_evento] ?? color["Tarea Despacho"]), e.realizada && "opacity-60 line-through")}>
@@ -206,6 +237,26 @@ function AgendaPage() {
           </div>
         </div>
       )}
+      <Dialog open={!!semanaGuardia} onOpenChange={(v) => !v && setSemanaGuardia(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Guardia de la semana del {semanaGuardia ? format(semanaGuardia, "d 'de' MMMM", { locale: es }) : ""}</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">Solo cambia esta semana; las demás siguen con tu día habitual.</p>
+          <div className="grid gap-2">
+            {semanaGuardia && [0, 1, 2, 3, 4].map((i) => { const d = addDays(semanaGuardia, i); return (
+              <div key={i} className="flex gap-2">
+                <Button className="flex-1 justify-start capitalize" variant={esDiaGuardia(d, diaGuardia, cambiosGuardia) ? "default" : "outline"} onClick={() => cambiarGuardiaSemana(semanaGuardia, toISODate(d))}>
+                  Guardia el {format(d, "EEEE d", { locale: es })}
+                </Button>
+                <Button variant="ghost" onClick={() => { setSemanaGuardia(null); setEdit({ tipo_evento: "Visita a Centro", fecha_inicio: format(d, "yyyy-MM-dd'T'09:00"), titulo: "" }); }}>Visita</Button>
+              </div>
+            ); })}
+          </div>
+          <DialogFooter className="gap-2">
+            {semanaGuardia && <Button variant="ghost" onClick={() => cambiarGuardiaSemana(semanaGuardia, "habitual")}>Volver al día habitual</Button>}
+            {semanaGuardia && <Button variant="outline" onClick={() => cambiarGuardiaSemana(semanaGuardia, null)}>Sin guardia esta semana</Button>}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <EditorEvento ev={edit} onClose={() => setEdit(null)} />
     </div>
   );

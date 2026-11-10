@@ -127,6 +127,13 @@
       "when": 1794303831987,
       "tag": "0017_trabajo_distancia",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1794303888258,
+      "tag": "0018_dia_guardia",
+      "breakpoints": true
     }
   ]
 }
