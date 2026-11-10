@@ -483,6 +483,24 @@ export type Database = {
           },
         ]
       }
+      trabajo_distancia: {
+        Row: {
+          dia_semana: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          dia_semana?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          dia_semana?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tramites: {
         Row: {
           asunto: string
