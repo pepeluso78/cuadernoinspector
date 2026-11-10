@@ -297,6 +297,24 @@ export type Database = {
           },
         ]
       }
+      guardia_semanas: {
+        Row: {
+          fecha: string | null
+          semana: string
+          user_id: string
+        }
+        Insert: {
+          fecha?: string | null
+          semana: string
+          user_id?: string
+        }
+        Update: {
+          fecha?: string | null
+          semana?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       guardias: {
         Row: {
           cargo_guardia: string
@@ -485,16 +503,19 @@ export type Database = {
       }
       trabajo_distancia: {
         Row: {
+          dia_guardia: number | null
           dia_semana: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          dia_guardia?: number | null
           dia_semana?: number | null
           updated_at?: string
           user_id?: string
         }
         Update: {
+          dia_guardia?: number | null
           dia_semana?: number | null
           updated_at?: string
           user_id?: string
