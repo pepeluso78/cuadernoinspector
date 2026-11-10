@@ -120,6 +120,13 @@
       "when": 1793903409102,
       "tag": "0016_centro_texto_en_agenda",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1794303831987,
+      "tag": "0017_trabajo_distancia",
+      "breakpoints": true
     }
   ]
 }
