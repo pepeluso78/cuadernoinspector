@@ -9,41 +9,51 @@ const GATEWAY = "https://gmail.googleapis.com/gmail/v1";
 
 type Part = CorreoParte;
 
-function decode(b64: string) {
+function decode(b64: string): string {
+  if (!b64) return "";
   try {
     const clean = b64.replace(/-/g, "+").replace(/_/g, "/").replace(/\s/g, "");
     return Buffer.from(clean, "base64").toString("utf-8");
   } catch {
-    const bin = atob(b64.replace(/-/g, "+").replace(/_/g, "/"));
-    return new TextDecoder().decode(Uint8Array.from(bin, (ch) => ch.charCodeAt(0)));
+    try {
+      const bin = atob(b64.replace(/-/g, "+").replace(/_/g, "/"));
+      return new TextDecoder().decode(Uint8Array.from(bin, (ch) => ch.charCodeAt(0)));
+    } catch {
+      return "";
+    }
   }
 }
 
-function texto(p: Part): { plain?: string | undefined; html?: string | undefined } {
+/** Recorre recursivamente todas las partes MIME del correo (incluyendo mensajes anidados) */
+function extraerTextos(p: Part | undefined, acum: { plains: string[]; htmls: string[] }) {
+  if (!p) return;
   const mime = (p.mimeType ?? "").toLowerCase();
-  if (mime === "text/plain" && p.body?.data && !p.filename) {
-    return { plain: decode(p.body.data) };
+  const esAdjuntoConNombre = Boolean(p.filename && p.filename.trim().length > 0);
+
+  if (!esAdjuntoConNombre && p.body?.data) {
+    const decodificado = decode(p.body.data).trim();
+    if (decodificado) {
+      if (mime === "text/plain") {
+        acum.plains.push(decodificado);
+      } else if (mime === "text/html") {
+        acum.htmls.push(decodificado);
+      } else if (mime.startsWith("text/")) {
+        acum.plains.push(decodificado);
+      }
+    }
   }
-  if (mime === "text/html" && p.body?.data && !p.filename) {
-    return { html: decode(p.body.data) };
+
+  for (const sub of p.parts ?? []) {
+    extraerTextos(sub, acum);
   }
-  const r: { plain?: string | undefined; html?: string | undefined } = {};
-  for (const sp of p.parts ?? []) {
-    const t = texto(sp);
-    if (t.plain) r.plain = r.plain ? `${r.plain}\n${t.plain}` : t.plain;
-    if (t.html) r.html = r.html ? `${r.html}\n${t.html}` : t.html;
-  }
-  if (!r.plain && !r.html && p.body?.data && !p.filename) {
-    r.plain = decode(p.body.data);
-  }
-  return r;
 }
 
 const sinHtml = (h: string) =>
   h
+    .replace(/<head[\s\S]*?<\/head>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")
     .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/<br\s*\/?>|<\/p>|<\/div>|<\/tr>|<\/li>/gi, "\n")
+    .replace(/<br\s*\/?>|<\/p>|<\/div>|<\/tr>|<\/li>|<\/h[1-6]>/gi, "\n")
     .replace(/<[^>]+>/g, "")
     .replace(/ /gi, " ")
     .replace(/&/gi, "&")
@@ -51,9 +61,31 @@ const sinHtml = (h: string) =>
     .replace(/>/gi, ">")
     .replace(/"/gi, '"')
     .replace(/'/gi, "'")
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(Number(dec)))
     .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+
+function obtenerCuerpoCompleto(payload: Part, snippet?: string): string {
+  const acum = { plains: [] as string[], htmls: [] as string[] };
+  extraerTextos(payload, acum);
+
+  const textoPlano = acum.plains.join("\n\n").trim();
+  const textoHtml = acum.htmls.map(sinHtml).join("\n\n").trim();
+
+  // Elegimos el que tenga más contenido real (muchos correos corporativos traen text/plain vacío y todo en text/html)
+  if (textoPlano.length >= 20 && textoPlano.length >= textoHtml.length * 0.5) {
+    return textoPlano;
+  }
+  if (textoHtml.length > 0) {
+    return textoHtml;
+  }
+  if (textoPlano.length > 0) {
+    return textoPlano;
+  }
+  return (snippet ?? "").trim();
+}
 
 async function obtenerAccessToken(): Promise<string> {
   const cid = process.env["GMAIL_CLIENT_ID"];
@@ -94,10 +126,27 @@ async function gmail(path: string, token?: string) {
   return r.json();
 }
 
-/** Lee los correos reenviados de los últimos 30 días y crea o completa los trámites y sus adjuntos. */
+/** Garantiza que el bucket DOCUMENTOS_BUCKET exista en Supabase antes de subir adjuntos */
+async function asegurarBucket(db: SupabaseClient<Database>) {
+  try {
+    const { data: buckets } = await db.storage.listBuckets();
+    const existe = (buckets ?? []).some((b) => b.id === DOCUMENTOS_BUCKET || b.name === DOCUMENTOS_BUCKET);
+    if (!existe) {
+      await db.storage.createBucket(DOCUMENTOS_BUCKET, { public: true });
+      console.log(`Bucket '${DOCUMENTOS_BUCKET}' creado automáticamente.`);
+    }
+  } catch (e) {
+    // Si falla listBuckets, intentamos crearlo directamente ignorando si ya existe
+    await db.storage.createBucket(DOCUMENTOS_BUCKET, { public: true }).catch(() => {});
+  }
+}
+
+/** Lee los correos reenviados de los últimos 30 días y crea o repara los trámites y sus adjuntos. */
 export async function importarCorreos(_cliente?: SupabaseClient<Database>) {
-  // Usamos siempre supabaseAdmin en el servidor para evitar bloqueos de RLS o Storage
   const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
+
+  // 1. Asegurar que el bucket exacto definido en DOCUMENTOS_BUCKET existe en Supabase
+  await asegurarBucket(db);
 
   const { data: config, error: configError } = await db
     .from("configuracion_aplicacion")
@@ -139,17 +188,19 @@ export async function importarCorreos(_cliente?: SupabaseClient<Database>) {
       if (!propia && from.toLowerCase() !== remitenteConfigurado.toLowerCase()) continue;
       if (!asuntoValido(h("subject"))) continue;
 
-      const t = texto(m.payload);
-      const textoPlano = t.plain?.trim() || "";
-      const textoHtml = t.html ? sinHtml(t.html) : "";
-      const cuerpo = (textoPlano.length >= textoHtml.length ? textoPlano : textoHtml) || m.snippet || "";
-
-      const datosParseados = correoATramite({
+      const cuerpoExtraido = obtenerCuerpoCompleto(m.payload, m.snippet);
+      const parseado = correoATramite({
         asunto: h("subject"),
-        cuerpo,
+        cuerpo: cuerpoExtraido,
         fecha: new Date(Number(m.internalDate)),
         remitente: h("from"),
       });
+
+      // Si correoATramite dejó descripcion_entrada vacía o cortó todo el texto, usamos el cuerpoExtraido íntegro
+      const descripcionFinal =
+        parseado.descripcion_entrada && parseado.descripcion_entrada.trim().length > 10
+          ? parseado.descripcion_entrada.trim()
+          : cuerpoExtraido;
 
       const existente = hechos.get(id);
       let tramiteId = existente?.id;
@@ -158,8 +209,8 @@ export async function importarCorreos(_cliente?: SupabaseClient<Database>) {
         const { data, error } = await db
           .from("tramites")
           .insert({
-            ...datosParseados,
-            descripcion_entrada: datosParseados.descripcion_entrada || cuerpo,
+            ...parseado,
+            descripcion_entrada: descripcionFinal,
             correo_id: id,
             ...(config?.user_id ? { user_id: config.user_id } : {}),
           })
@@ -171,25 +222,34 @@ export async function importarCorreos(_cliente?: SupabaseClient<Database>) {
         }
         tramiteId = data.id;
         creados++;
-      } else if (!existente?.descripcion_entrada && (datosParseados.descripcion_entrada || cuerpo)) {
-        // Si el trámite se había creado antes con el cuerpo vacío, lo repara automáticamente
-        await db
-          .from("tramites")
-          .update({ descripcion_entrada: datosParseados.descripcion_entrada || cuerpo })
-          .eq("id", tramiteId);
+      } else {
+        // Si el trámite ya existía pero tenía la descripción vacía o muy corta, la actualizamos con el cuerpo real
+        const descActual = (existente?.descripcion_entrada ?? "").trim();
+        if (descActual.length < 15 && descripcionFinal.length > descActual.length) {
+          await db
+            .from("tramites")
+            .update({
+              descripcion_entrada: descripcionFinal,
+              ...(parseado.numero_registro ? { numero_registro: parseado.numero_registro } : {}),
+              ...(parseado.remitente ? { remitente: parseado.remitente } : {}),
+            })
+            .eq("id", tramiteId);
+        }
       }
 
       const { data: existentes, error: docError } = await db
         .from("documentos_tramite")
-        .select("correo_parte_id")
+        .select("correo_parte_id,nombre")
         .eq("tramite_id", tramiteId);
       if (docError) {
         errores.push(`No se pudieron comprobar los documentos de «${h("subject")}»`);
         continue;
       }
-      const guardados = new Set((existentes ?? []).map((d) => d.correo_parte_id));
+      const guardados = new Set((existentes ?? []).map((d) => d.correo_parte_id).filter(Boolean));
+      const nombresGuardados = new Set((existentes ?? []).map((d) => d.nombre).filter(Boolean));
 
-      for (const parte of adjuntosCorreo(m.payload).filter((p) => !guardados.has(p.clave))) {
+      for (const parte of adjuntosCorreo(m.payload)) {
+        if (guardados.has(parte.clave) || nombresGuardados.has(parte.filename)) continue;
         try {
           const contenido =
             parte.body?.data ??
@@ -201,10 +261,22 @@ export async function importarCorreos(_cliente?: SupabaseClient<Database>) {
           const ruta = rutaDocumento(tramiteId, `correo-${id}-${parte.clave.replace(/[^\w.-]/g, "_")}`, parte.filename);
           const mime = parte.mimeType ?? "application/octet-stream";
 
-          const { error: uploadError } = await db.storage
+          let { error: uploadError } = await db.storage
             .from(DOCUMENTOS_BUCKET)
             .upload(ruta, bytes, { contentType: mime, upsert: true });
-          if (uploadError && !/already exists|duplicate/i.test(uploadError.message)) throw uploadError;
+
+          // Si por cualquier motivo el bucket no existía aún, lo crea en el acto y reintenta la subida
+          if (uploadError && /bucket not found/i.test(uploadError.message)) {
+            await db.storage.createBucket(DOCUMENTOS_BUCKET, { public: true });
+            const retry = await db.storage
+              .from(DOCUMENTOS_BUCKET)
+              .upload(ruta, bytes, { contentType: mime, upsert: true });
+            uploadError = retry.error;
+          }
+
+          if (uploadError && !/already exists|duplicate/i.test(uploadError.message)) {
+            throw uploadError;
+          }
 
           const { error } = await db.from("documentos_tramite").insert({
             tramite_id: tramiteId,
@@ -218,6 +290,7 @@ export async function importarCorreos(_cliente?: SupabaseClient<Database>) {
           });
           if (error && !/duplicate|unique/i.test(error.message)) throw error;
           adjuntos++;
+          guardados.add(parte.clave);
         } catch (e) {
           console.error("Adjunto no importado", parte.filename, e);
           errores.push(`No se pudo guardar «${parte.filename}»: ${e instanceof Error ? e.message : ""}`);
