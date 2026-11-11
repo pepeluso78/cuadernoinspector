@@ -1,16 +1,24 @@
-# Etapa 1: Compilar el proyecto Vite/React de Lovable
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
+
+COPY package.json ./
+RUN npm install --legacy-peer-deps --loglevel error
+
 COPY . .
+ENV NITRO_PRESET=node-server
+RUN npm run build && cp -r /app/public/* /app/.output/public/ 2>/dev/null || true
 
-# Vite leerá automáticamente tu archivo .env al hacer el build
-RUN npm run build
+FROM node:22-alpine
+WORKDIR /app
 
-# Etapa 2: Servidor web ligero Nginx
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+ENV NODE_ENV=production
+ENV NITRO_SERVE_STATIC=true
+ENV HOST=0.0.0.0
+ENV PORT=8085
+
+COPY --from=build /app/.output ./.output
+COPY --from=build /app/package.json ./package.json
+
+EXPOSE 8085
+
+CMD ["node", ".output/server/index.mjs"]
